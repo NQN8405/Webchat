@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %> · WebChat</title>
+    <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/css/admin.css" />
+    <link rel="icon" type="image/png" href="/images/logo.png" />
+  </head>
+  <body>
+    <main class="admin-main" id="main-content">
+      <section class="panel panel-form card">
+        <h1><%= title %></h1>
+        <p class="alert alert-danger" role="alert"><%= message %></p>
+        <a class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-2" href="<%= typeof user!=='undefined' && user?.role==='admin'?'/admin/users':'/' %>">Về trang chính</a>
+      </section>
+    </main>
+  </body>
+</html>
