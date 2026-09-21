@@ -41,9 +41,9 @@ function createApp() {
   });
   const server = createServer(app);
   const io = null;
-  app.get("/", (req, res) => res.send("WebChat"));
-  
-  
+  app.use(require("./routes/authRoutes"));
+  app.get("/admin/users", require("./middleware/authMiddleware").requireAdmin, (req,res) => res.send("WebChat Admin"));
+  app.get("/", require("./middleware/authMiddleware").requireAuth, (req,res) => res.send("WebChat"));
   app.use((req, res) =>
     res.status(404).render("error", {
       title: "Không tìm thấy trang",
