@@ -1,0 +1,68 @@
+<div class="form-grid">
+  <label>
+    Tên hiển thị
+    <input class="form-control" name="displayName" value="<%= record?.displayName || '' %>" required maxlength="100" />
+  </label>
+  <label>
+    Tên đăng nhập
+    <input class="form-control" name="username" value="<%= record?.username || '' %>" required maxlength="80" autocomplete="off" />
+  </label>
+  <label>
+    Ngày sinh
+    <input class="form-control"
+      name="birthDate"
+      type="date"
+      value="<%= record?.birthDate ? new Date(record.birthDate).toISOString().slice(0,10) : '' %>"
+      min="1900-01-01"
+      max="<%= new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Ho_Chi_Minh'}).format(new Date()) %>"
+      required
+      autocomplete="bday"
+    />
+    <% if(!record){ %>
+    <small>Mật khẩu ban đầu là ngày sinh theo ddMMyyyy. Ví dụ: 05/09/2004 → 05092004.</small>
+    <% } %>
+  </label>
+  <% if(record){ %>
+  <label>
+    Mật khẩu mới
+    <input class="form-control" name="password" minlength="6" maxlength="72" type="password" autocomplete="new-password" />
+    <small>Tối thiểu 6 ký tự, tối đa 72 byte. Để trống để giữ mật khẩu hiện tại.</small>
+  </label>
+  <% } %>
+  <label>
+    Vai trò
+    <select class="form-select" name="role" required>
+      <% [['student','Sinh viên'],['lecturer','Giảng viên'],['admin','Quản trị viên']].forEach(([value,label])=>{ %>
+      <option value="<%= value %>" <%= (record?.role || 'student')===value?'selected':'' %>><%= label %></option>
+      <% }) %>
+    </select>
+  </label>
+  <label>
+    Khoa
+    <select class="form-select" name="departmentId">
+      <option value="">Chưa gán khoa</option>
+      <% departments.forEach(d=>{const selected=record?.departmentId && String(record.departmentId._id)===String(d._id);if(d.status==='active'||selected){ %>
+      <option value="<%= d._id %>" <%= selected?'selected':'' %>>
+        <%= d.code %>
+        —
+        <%= d.name %>
+        <%= d.status==='inactive'?' (ngừng hoạt động)':'' %>
+      </option>
+      <% } }) %>
+    </select>
+  </label>
+  <label data-class-field>
+    Lớp
+    <select class="form-select" name="classId">
+      <option value="">Chưa xếp lớp</option>
+      <% classes.forEach(c=>{const selected=record?.classId && String(record.classId._id)===String(c._id);if(c.majorId?.departmentId && ((c.status==='active'&&c.majorId.status==='active'&&c.majorId?.departmentId.status==='active')||selected)){ %>
+      <option data-department-id="<%= c.majorId?.departmentId._id %>" value="<%= c._id %>" <%= selected?'selected':'' %>>
+        <%= c.code %>
+        —
+        <%= c.name %>
+      </option>
+      <% } }) %>
+    </select>
+  </label>
+</div>
+<p class="help" data-membership-help>Khoa của sinh viên được lấy theo lớp đã chọn.</p>

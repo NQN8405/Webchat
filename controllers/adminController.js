@@ -1,0 +1,167 @@
+const bcrypt = require("bcrypt");
+const User = require("../models/User");
+const Department = require("../models/Department");
+const Major = require("../models/Major");
+const StudentClass = require("../models/StudentClass");
+const Channel = require("../models/Channel");
+const ChannelMember = require("../models/ChannelMember");
+const {
+  text,
+  objectId,
+  requireValue,
+  sameId,
+  birthDate,
+} = require("../services/validation");
+const {
+  syncClasses,
+  resolveUserMembership,
+  getActiveClass,
+  getActiveMajor,
+  classEvents,
+} = require("../services/classService");
+
+async function formOptions() {
+  const [departments, majors, classes, lecturers] = await Promise.all([
+    Department.find().sort({ code: 1 }),
+    Major.find().populate("departmentId").sort({ code: 1 }),
+    StudentClass.find()
+      .populate({ path: "majorId", populate: { path: "departmentId" } })
+      .populate("homeroomTeacherId")
+      .sort({ code: 1 }),
+    User.find({ role: "lecturer" }).sort({ displayName: 1 }),
+  ]);
+  return { departments, majors, classes, lecturers };
+}
+function searchFilter(query, fields) {
+  const value = text(query.search).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const filter = ["active", "inactive", "locked", "closed"].includes(
+    query.status,
+  )
+    ? { status: query.status }
+    : {};
+  return value
+    ? {
+        ...filter,
+        $or: fields.map((field) => ({
+          [field]: { $regex: value, $options: "i" },
+        })),
+      }
+    : filter;
+}
+async function page(req, res, view, rows, extra = {}) {
+  const options = await formOptions();
+  if (["users", "departments", "majors", "classes", "channels"].includes(view))
+    options[view] = rows;
+  const filters = { ...req.query, search: text(req.query.search) };
+  if (view === "classStudents") {
+    const counts = await User.aggregate([
+      { $match: { role: "student" } },
+      { $group: { _id: "$classId", count: { $sum: 1 } } },
+    ]);
+    options.classes = options.classes.map((item) => ({
+      ...item.toObject(),
+      studentCount: counts.find((c) => sameId(c._id, item._id))?.count || 0,
+    }));
+  }
+  res.render("admin/" + view, { ...options, filters, ...extra });
+}
+async function findRecord(Model, id) {
+  objectId(id, "Mã bản ghi");
+  return requireValue(await Model.findById(id), "Không tìm thấy bản ghi.");
+}
+async function finish(req, res, path, message) {
+  await syncClasses();
+  req.session.notice = message;
+  res.redirect(path);
+}
+function catalogFields(body) {
+  const code = requireValue(text(body.code).toUpperCase(), "Vui lòng nhập mã.");
+  const name = requireValue(text(body.name), "Vui lòng nhập tên.");
+  requireValue(code.length <= 30, "Mã không được vượt quá 30 ký tự.");
+  requireValue(name.length <= 150, "Tên không được vượt quá 150 ký tự.");
+  return { code, name };
+}
+
+exports.getUsers = async (req, res) => {
+  const filter = searchFilter(req.query, ["username", "displayName"]);
+  if (["student", "lecturer", "admin"].includes(req.query.role))
+    filter.role = req.query.role;
+  for (const key of ["departmentId", "classId"])
+    if (text(req.query[key])) filter[key] = objectId(req.query[key], key);
+  await page(
+    req,
+    res,
+    "users",
+    await User.find(filter)
+      .populate("departmentId")
+      .populate("classId")
+      .sort({ username: 1 }),
+  );
+};
+exports.saveUser = async (req, res) => {
+  const item = req.params.id
+    ? await findRecord(User, req.params.id)
+    : new User();
+  const role = text(req.body.role);
+  requireValue(
+    ["admin", "lecturer", "student"].includes(role),
+    "Vai trò không hợp lệ.",
+  );
+  if (item.id === req.session.user.id)
+    requireValue(role === "admin", "Không thể tự bỏ quyền quản trị.");
+  if (item.role === "lecturer" && role !== "lecturer")
+    requireValue(
+      !(await StudentClass.exists({ homeroomTeacherId: item._id })),
+      "Hãy thay giảng viên chủ nhiệm trước khi đổi vai trò.",
+    );
+  const membership = await resolveUserMembership(
+    {
+      role,
+      classId: text(req.body.classId),
+      departmentId: text(req.body.departmentId),
+    },
+    item,
+  );
+  const dateOfBirth = birthDate(req.body.birthDate);
+  const initialPassword = req.body.birthDate.split("-").reverse().join("");
+  const password = item.isNew
+    ? initialPassword
+    : typeof req.body.password === "string"
+      ? req.body.password
+      : "";
+  if (item.isNew || password) {
+    requireValue(
+      password.length >= 6 && Buffer.byteLength(password) <= 72,
+      "Mật khẩu cần ít nhất 6 ký tự và tối đa 72 byte.",
+    );
+    item.hashedPassword = await bcrypt.hash(password, 10);
+  }
+  const username = text(req.body.username);
+  const displayName = text(req.body.displayName);
+  requireValue(
+    username && username.length <= 80,
+    "Tên đăng nhập cần từ 1 đến 80 ký tự.",
+  );
+  requireValue(
+    displayName && displayName.length <= 100,
+    "Tên hiển thị cần từ 1 đến 100 ký tự.",
+  );
+  Object.assign(item, membership, {
+    role,
+    birthDate: dateOfBirth,
+    username,
+    displayName,
+  });
+  await item.save();
+  await finish(req, res, "/admin/users", "Đã lưu tài khoản.");
+};
+exports.toggleUser = async (req, res) => {
+  const item = await findRecord(User, req.params.id);
+  requireValue(
+    item.id !== req.session.user.id,
+    "Không thể khóa tài khoản đang đăng nhập.",
+  );
+  item.status = item.status === "active" ? "locked" : "active";
+  await item.save();
+  await finish(req, res, "/admin/users", "Đã đổi trạng thái tài khoản.");
+};

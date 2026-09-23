@@ -1,0 +1,503 @@
+:root {
+  --ink: #182b3a;
+  --muted: #617383;
+  --line: #dce5e9;
+  --brand: #126f64;
+  --surface: #f4f7f8;
+  --bs-body-color: var(--ink);
+  --bs-body-bg: #fff;
+  --bs-border-color: var(--line);
+  --bs-body-font-family: "Segoe UI", Arial, sans-serif;
+}
+body {
+  min-width: 1100px;
+  margin: 0;
+  font:
+    14px/1.55 "Segoe UI",
+    Arial,
+    sans-serif;
+  color: var(--ink);
+  background: var(--surface);
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid #5eaaa1;
+  outline-offset: 3px;
+}
+/* Bố cục và menu quản trị */
+.admin-shell {
+  display: grid;
+  grid-template-columns: 228px minmax(0, 1fr);
+  min-height: 100vh;
+}
+.admin-nav {
+  min-height: 0;
+  overflow: hidden;
+  background: #142c35;
+  color: #e1eeee;
+  padding: 28px 18px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100dvh;
+}
+.brand {
+  gap: 12px;
+  font-size: 21px;
+  font-weight: 700;
+  padding: 0 10px 36px;
+}
+.brand-symbol {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: #e4f3ef;
+  color: var(--brand);
+  font-size: 22px;
+}
+.brand small {
+  display: block;
+  font-size: 11px;
+  font-weight: 400;
+  color: #a9c2c7;
+}
+.nav-caption {
+  font-size: 10px;
+  letter-spacing: 1.7px;
+  color: #8fa9af;
+  padding: 0 12px 12px;
+}
+.admin-nav nav {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  align-content: start;
+  display: grid;
+  gap: 6px;
+}
+.admin-nav nav a {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #c4d4d7;
+}
+.admin-nav nav a:hover {
+  background: #223f49;
+}
+.admin-nav nav a[aria-current="page"] {
+  color: #fff;
+  background: #286356;
+  font-weight: 600;
+}
+.nav-bottom {
+  gap: 9px;
+  border-top: 1px solid #34505a;
+  padding: 20px 4px 0;
+  font-size: 12px;
+}
+.nav-bottom small {
+  display: block;
+  color: #a9c2c7;
+  font-size: 10px;
+}
+.account-avatar {
+  background: #32515b;
+  border-radius: 50%;
+  padding: 8px 13px;
+}
+.admin-workspace {
+  min-width: 0;
+}
+.admin-main {
+  padding: 36px 38px 48px;
+  max-width: 1600px;
+  margin: auto;
+}
+.page-heading {
+  margin-bottom: 28px;
+}
+.eyebrow {
+  font-size: 10px;
+  color: var(--brand);
+  letter-spacing: 1.7px;
+  font-weight: 700;
+}
+h1 {
+  font-weight: 700;
+  font-size: 28px;
+  letter-spacing: -0.7px;
+  margin: 8px 0;
+}
+h2 {
+  font-size: 16px;
+  margin: 0;
+  font-weight: 600;
+}
+.page-heading p {
+  color: var(--muted);
+  margin: 0;
+  font-size: 13px;
+}
+.panel {
+  border-radius: 12px;
+  margin-bottom: 22px;
+  overflow: hidden;
+  box-shadow: 0 2px 3px #102c3504;
+}
+.panel-toolbar {
+  padding: 24px;
+}
+.muted {
+  color: var(--muted);
+  font-size: 12px;
+}
+.text-link {
+  color: var(--brand);
+  font-weight: 600;
+  font-size: 12px;
+}
+.back-link {
+  margin-bottom: 18px;
+  gap: 7px;
+}
+.filters {
+  gap: 12px;
+  padding: 0 24px 22px;
+}
+.filters label {
+  flex: 1;
+  min-width: 110px;
+  font-size: 11px;
+}
+.filters .filter-search {
+  flex: 2;
+  min-width: 190px;
+}
+.filters .text-link {
+  padding: 11px 0;
+}
+label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+}
+label small,
+.help {
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--muted);
+}
+/* Bảng dữ liệu và trạng thái */
+
+.table > thead > tr > th {
+  text-align: left;
+  background: #f8fafb;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--muted);
+  padding: 13px 24px;
+  border-block: 1px solid var(--line);
+  white-space: nowrap;
+}
+.table > tbody > tr > td {
+  padding: 17px 24px;
+}
+tr:last-child td {
+  border-bottom: 0;
+}
+td strong {
+  font-weight: 600;
+}
+td small {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+.code {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.row-actions {
+  gap: 7px;
+}
+.row-actions form {
+  margin: 0;
+}
+.pill:before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.pill.active {
+  background: #e9f5ee;
+  color: #237147;
+}
+.pill.closed {
+  background: #f0f2f5;
+  color: #626e7a;
+}
+.empty {
+  padding: 48px 24px;
+  color: var(--muted);
+}
+/* Hộp thoại thêm/sửa */
+dialog {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 0;
+  max-width: min(680px, calc(100vw - 32px));
+  width: 680px;
+  max-height: calc(100vh - 40px);
+  box-shadow: 0 24px 80px #0b26354d;
+}
+dialog::backdrop {
+  background: #142c3566;
+}
+dialog form {
+  padding: 28px;
+}
+.dialog-heading {
+  margin-bottom: 24px;
+}
+.icon-button {
+  border: 0;
+  background: transparent;
+  font-size: 18px;
+  color: var(--muted);
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+}
+.dialog-actions {
+  gap: 10px;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.admin-footer {
+  color: #7d8b96;
+  font-size: 11px;
+  padding: 0 38px 20px;
+}
+.class-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 18px;
+}
+.class-card {
+  border-radius: 12px;
+  padding: 24px;
+}
+.class-card:hover {
+  border-color: #74a89b;
+}
+.class-card h2 {
+  margin: 14px 0 6px;
+}
+.class-card p {
+  color: var(--muted);
+  font-size: 12px;
+}
+.class-card div {
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+  margin-top: 20px;
+  font-size: 12px;
+}
+.class-card div span {
+  float: right;
+  color: var(--brand);
+}
+.two-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(300px, 1fr);
+  gap: 22px;
+}
+.panel-form {
+  padding: 24px;
+}
+.student-options {
+  max-height: 380px;
+  overflow: auto;
+  margin: 14px 0 24px;
+}
+.student-options label {
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.student-options .form-check-input {
+  flex-shrink: 0;
+  margin: 0;
+}
+[hidden] {
+  display: none !important;
+}
+@media (max-width: 1100px) {
+  .admin-main {
+    padding: 28px 22px;
+  }
+  .admin-shell {
+    grid-template-columns: 200px minmax(0, 1fr);
+  }
+  .table > tbody > tr > td,
+  .table > thead > tr > th {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .two-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Decorative Bootstrap Icons share the button/link text color. */
+.bi {
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+}
+.admin-nav nav .bi {
+  font-size: 19px;
+  width: 19px;
+  height: 19px;
+  opacity: 0.9;
+}
+.btn .bi {
+  font-size: 15px;
+}
+
+.alert > .bi {
+  margin-right: 5px;
+  font-size: 16px;
+}
+
+.brand-symbol img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 3px;
+}
+
+.logout-icon {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.nav-bottom > form {
+  margin-left: auto;
+  font-size: 20px;
+}
+
+.admin-nav > .brand,
+.admin-nav > .nav-caption,
+.nav-bottom {
+  flex-shrink: 0;
+}
+
+/* Bootstrap xử lý thành phần chung; biến CSS giữ màu và kích thước WebChat. */
+.btn {
+  --bs-btn-font-size: 12px;
+  --bs-btn-font-weight: 600;
+  --bs-btn-padding-x: 15px;
+  --bs-btn-padding-y: 10px;
+  --bs-btn-border-radius: 7px;
+  white-space: nowrap;
+}
+.btn-primary {
+  --bs-btn-bg: var(--brand);
+  --bs-btn-border-color: var(--brand);
+  --bs-btn-hover-bg: #0a5a50;
+  --bs-btn-hover-border-color: #0a5a50;
+  --bs-btn-active-bg: #0a5a50;
+  --bs-btn-active-border-color: #0a5a50;
+  --bs-btn-disabled-bg: var(--brand);
+  --bs-btn-disabled-border-color: var(--brand);
+}
+.btn-outline-secondary {
+  --bs-btn-color: var(--ink);
+  --bs-btn-border-color: var(--line);
+  --bs-btn-hover-color: var(--ink);
+  --bs-btn-hover-bg: #eef5f3;
+  --bs-btn-hover-border-color: var(--line);
+}
+.btn-light {
+  --bs-btn-bg: #f8fafb;
+  --bs-btn-border-color: var(--line);
+  --bs-btn-hover-bg: #eef5f3;
+}
+.btn-sm {
+  --bs-btn-font-size: 11px;
+  --bs-btn-padding-x: 10px;
+  --bs-btn-padding-y: 7px;
+}
+.form-control, .form-select {
+  margin-top: 6px;
+  min-height: 42px;
+  padding-block: 10px;
+  font-size: inherit;
+  border-color: #ccd8de;
+}
+.form-control:focus, .form-select:focus, .form-check-input:focus {
+  border-color: #5eaaa1;
+  box-shadow: 0 0 0 3px #5eaaa126;
+}
+.form-check-input:checked {
+  background-color: var(--brand);
+  border-color: var(--brand);
+}
+.table {
+  --bs-table-border-color: var(--line);
+  --bs-table-hover-bg: #fcfdfd;
+  --bs-table-hover-color: var(--ink);
+  font-size: 13px;
+}
+.alert { font-size: 13px; }
+.card {
+  --bs-card-border-color: var(--line);
+  --bs-card-bg: #fff;
+}
+.pill {
+  padding: 5px 10px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.55;
+}

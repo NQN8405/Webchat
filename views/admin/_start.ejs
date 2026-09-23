@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %> · WebChat</title>
+    <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/bootstrap-icons/bootstrap-icons.css" />
+    <link rel="stylesheet" href="/css/admin.css" />
+    <link rel="icon" type="image/png" href="/images/logo.png" />
+  </head>
+  <body>
+    <div class="admin-shell">
+      <aside class="admin-nav d-flex flex-column">
+        <a class="brand d-flex align-items-center" href="/admin/users">
+          <span class="brand-symbol">
+            <img src="/images/logo.png" alt="" width="38" height="38" />
+          </span>
+          <span>
+            WebChat
+            <small>Quản trị hệ thống</small>
+          </span>
+        </a>
+        <div class="nav-caption">QUẢN LÝ</div>
+        <nav aria-label="Quản trị">
+          <% const links=[["users","Tài khoản","people"]];links.forEach(([key,label,iconName])=>{ %>
+          <a href="/admin/<%= key %>" <%= section===key?'aria-current=page':'' %>>
+            <i class="bi bi-<%= iconName %>" aria-hidden="true"></i>
+            <%= label %>
+          </a>
+          <% }) %>
+        </nav>
+        <div class="nav-bottom d-flex align-items-center mt-auto">
+          <span class="account-avatar"><%= typeof user !== 'undefined' && user ? user.displayName.slice(0,1) : 'A' %></span>
+          <div>
+            <strong><%= typeof user !== 'undefined' && user ? user.displayName : 'Quản trị viên' %></strong>
+            <small>Quản trị viên</small>
+          </div>
+          <form action="/logout" method="POST">
+            <input type="hidden" name="_csrf" value="<%= logoutToken %>" />
+            <button class="logout-icon" aria-label="Đăng xuất" title="Đăng xuất">
+              <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+            </button>
+          </form>
+        </div>
+      </aside>
+      <div class="admin-workspace">
+        <main class="admin-main" id="main-content">
+          <div class="page-heading">
+            <div>
+              <h1><%= title %></h1>
+              <p><%= description %></p>
+            </div>
+          </div>
+          <% if(typeof notice !== 'undefined' && notice){ %>
+          <div class="alert alert-success" role="status">
+            <i class="bi bi-check-circle" aria-hidden="true"></i>
+            <%= notice %>
+          </div>
+          <% } %>
+          <% if(typeof error !== 'undefined' && error){ %>
+          <div class="alert alert-danger" role="alert"><%= error %></div>
+          <% } %>

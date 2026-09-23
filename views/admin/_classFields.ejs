@@ -1,0 +1,39 @@
+<div class="form-grid">
+  <label>
+    Mã lớp
+    <input class="form-control" name="code" required maxlength="30" value="<%= record?.code || '' %>" />
+  </label>
+  <label>
+    Tên lớp
+    <input class="form-control" name="name" required maxlength="150" value="<%= record?.name || '' %>" />
+  </label>
+  <label>
+    Ngành
+    <select class="form-select" name="majorId" required>
+      <option value="">Chọn ngành</option>
+      <% majors.forEach(d=>{const selected=record?.majorId&&String(record.majorId._id)===String(d._id);if((d.status==='active'&&d.departmentId?.status==='active')||selected){ %>
+      <option value="<%= d._id %>" <%= selected?'selected':'' %>>
+        <%= d.code %>
+        —
+        <%= d.name %>
+        ·
+        <%= d.departmentId?.name %>
+        <%= d.status==='inactive'?' (ngừng hoạt động)':'' %>
+      </option>
+      <% } }) %>
+    </select>
+  </label>
+  <label>
+    Chủ nhiệm
+    <select class="form-select" name="homeroomTeacherId">
+      <option value="">Chưa phân công</option>
+      <% lecturers.forEach(l=>{const selected=record?.homeroomTeacherId&&String(record.homeroomTeacherId._id)===String(l._id);if(l.status==='active'||selected){ %>
+      <option value="<%= l._id %>" <%= selected?'selected':'' %>>
+        <%= l.displayName %>
+        <%= l.status==='locked'?' (đã khóa)':'' %>
+      </option>
+      <% } }) %>
+    </select>
+  </label>
+</div>
+<p class="help">Tạo lớp sẽ tự tạo kênh trao đổi chung.</p>

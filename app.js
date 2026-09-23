@@ -42,7 +42,7 @@ function createApp() {
   const server = createServer(app);
   const io = null;
   app.use(require("./routes/authRoutes"));
-  app.get("/admin/users", require("./middleware/authMiddleware").requireAdmin, (req,res) => res.send("WebChat Admin"));
+  app.use("/admin", require("./routes/adminRoutes"));
   app.get("/", require("./middleware/authMiddleware").requireAuth, (req,res) => res.send("WebChat"));
   app.use((req, res) =>
     res.status(404).render("error", {

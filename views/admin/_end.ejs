@@ -1,0 +1,71 @@
+</main>
+        <footer class="admin-footer"></footer>
+      </div>
+    </div>
+    <script>
+      // Mở/đóng hộp thoại; khi đóng, trả biểu mẫu về dữ liệu ban đầu.
+      document.querySelectorAll("[data-open-dialog]").forEach((button) =>
+        button.addEventListener("click", () => {
+          const dialog = document.getElementById(button.dataset.openDialog);
+          dialog.showModal();
+          dialog.querySelector("input:not([type=hidden]),select")?.focus();
+        }),
+      );
+      document
+        .querySelectorAll("[data-close-dialog]")
+        .forEach((button) =>
+          button.addEventListener("click", () => button.closest("dialog").close()),
+        );
+      document.querySelectorAll("dialog").forEach((dialog) =>
+        dialog.addEventListener("close", () => {
+          dialog.querySelector("form")?.reset();
+          dialog.querySelector("[name=role]")?.dispatchEvent(new Event("change"));
+        }),
+      );
+      // Xác nhận trước các thao tác thay đổi trạng thái hoặc bỏ sinh viên khỏi lớp.
+      document.querySelectorAll("[data-confirm]").forEach((form) =>
+        form.addEventListener("submit", (event) => {
+          if (!confirm(form.dataset.confirm)) event.preventDefault();
+        }),
+      );
+      // Ẩn trường lớp theo vai trò; nếu chọn lớp thì tự lấy khoa tương ứng.
+      document.querySelectorAll(".membership-form").forEach((form) => {
+        const role = form.elements.role,
+          department = form.elements.departmentId,
+          cls = form.elements.classId,
+          field = form.querySelector("[data-class-field]"),
+          help = form.querySelector("[data-membership-help]");
+        function update() {
+          const student = role.value === "student";
+          field.hidden = !student;
+          cls.disabled = !student;
+          if (!student) cls.value = "";
+          const selected = student && cls.value ? cls.selectedOptions[0] : null;
+          if (selected) department.value = selected.dataset.departmentId;
+          Array.from(department.options).forEach(
+            (o) => (o.disabled = !!selected && o.value !== department.value),
+          );
+          help.textContent = selected
+            ? "Khoa được tự động lấy theo lớp. Bỏ chọn lớp để đổi khoa."
+            : "Sinh viên có thể chưa xếp lớp. Giảng viên được chọn khoa trực thuộc.";
+        }
+        role.addEventListener("change", update);
+        cls.addEventListener("change", update);
+        update();
+      });
+      // Lọc danh sách sinh viên đang hiển thị, không gửi truy vấn mới đến máy chủ.
+      document.querySelectorAll("[data-search-list]").forEach((input) =>
+        input.addEventListener("input", () => {
+          document
+            .querySelectorAll("[data-student-option]")
+            .forEach(
+              (row) =>
+                (row.hidden = !row.textContent
+                  .toLocaleLowerCase("vi")
+                  .includes(input.value.toLocaleLowerCase("vi"))),
+            );
+        }),
+      );
+    </script>
+  </body>
+</html>
