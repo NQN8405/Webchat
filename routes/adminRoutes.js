@@ -9,6 +9,10 @@ router.get("/users", controller.getUsers);
 router.post("/users", controller.saveUser);
 router.post("/users/:id/update", controller.saveUser);
 router.post("/users/:id/toggle-status", controller.toggleUser);
+router.get("/departments", controller.getDepartments);
+router.post("/departments", controller.saveDepartment);
+router.post("/departments/:id/update", controller.saveDepartment);
+router.post("/departments/:id/toggle-status", controller.toggleDepartment);
 
 router.use((error, req, res, next) => {
   if (res.headersSent || req.method !== "POST") return next(error);

@@ -23,7 +23,7 @@
         </a>
         <div class="nav-caption">QUẢN LÝ</div>
         <nav aria-label="Quản trị">
-          <% const links=[["users","Tài khoản","people"]];links.forEach(([key,label,iconName])=>{ %>
+          <% const links=[["users","Tài khoản","people"],["departments","Khoa","building"]];links.forEach(([key,label,iconName])=>{ %>
           <a href="/admin/<%= key %>" <%= section===key?'aria-current=page':'' %>>
             <i class="bi bi-<%= iconName %>" aria-hidden="true"></i>
             <%= label %>

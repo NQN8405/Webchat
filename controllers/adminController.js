@@ -82,6 +82,37 @@ function catalogFields(body) {
   return { code, name };
 }
 
+exports.getDepartments = async (req, res) =>
+  page(
+    req,
+    res,
+    "departments",
+    await Department.find(searchFilter(req.query, ["code", "name"])).sort({
+      code: 1,
+    }),
+  );
+exports.saveDepartment = async (req, res) => {
+  const fields = catalogFields(req.body);
+  if (req.params.id) {
+    const item = await findRecord(Department, req.params.id);
+    Object.assign(item, fields);
+    await item.save();
+  } else {
+    await Department.create(fields);
+  }
+  await finish(req, res, "/admin/departments", "Đã lưu khoa.");
+};
+exports.toggleDepartment = async (req, res) => {
+  const item = await findRecord(Department, req.params.id);
+  item.status = item.status === "active" ? "inactive" : "active";
+  await item.save();
+  await finish(
+    req,
+    res,
+    "/admin/departments",
+    "Đã đổi trạng thái khoa; kênh liên quan được đồng bộ.",
+  );
+};
 exports.getUsers = async (req, res) => {
   const filter = searchFilter(req.query, ["username", "displayName"]);
   if (["student", "lecturer", "admin"].includes(req.query.role))
