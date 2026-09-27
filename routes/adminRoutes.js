@@ -13,6 +13,10 @@ router.get("/departments", controller.getDepartments);
 router.post("/departments", controller.saveDepartment);
 router.post("/departments/:id/update", controller.saveDepartment);
 router.post("/departments/:id/toggle-status", controller.toggleDepartment);
+router.get("/majors", controller.getMajors);
+router.post("/majors", controller.saveMajor);
+router.post("/majors/:id/update", controller.saveMajor);
+router.post("/majors/:id/toggle-status", controller.toggleMajor);
 
 router.use((error, req, res, next) => {
   if (res.headersSent || req.method !== "POST") return next(error);

@@ -113,6 +113,43 @@ exports.toggleDepartment = async (req, res) => {
     "Đã đổi trạng thái khoa; kênh liên quan được đồng bộ.",
   );
 };
+exports.getMajors = async (req, res) => {
+  const filter = searchFilter(req.query, ["code", "name"]);
+  if (text(req.query.departmentId))
+    filter.departmentId = objectId(req.query.departmentId, "Khoa");
+  await page(
+    req,
+    res,
+    "majors",
+    await Major.find(filter).populate("departmentId").sort({ code: 1 }),
+  );
+};
+exports.saveMajor = async (req, res) => {
+  const item = req.params.id
+    ? await findRecord(Major, req.params.id)
+    : new Major();
+  const department = await findRecord(Department, text(req.body.departmentId));
+  requireValue(
+    department.status === "active" || sameId(item.departmentId, department),
+    "Không thể chọn khoa ngừng hoạt động.",
+  );
+  Object.assign(item, catalogFields(req.body), {
+    departmentId: department._id,
+  });
+  await item.save();
+  await finish(req, res, "/admin/majors", "Đã lưu ngành.");
+};
+exports.toggleMajor = async (req, res) => {
+  const item = await findRecord(Major, req.params.id);
+  if (item.status !== "active")
+    requireValue(
+      (await Department.findById(item.departmentId))?.status === "active",
+      "Cần kích hoạt khoa trước khi kích hoạt ngành.",
+    );
+  item.status = item.status === "active" ? "inactive" : "active";
+  await item.save();
+  await finish(req, res, "/admin/majors", "Đã đổi trạng thái ngành.");
+};
 exports.getUsers = async (req, res) => {
   const filter = searchFilter(req.query, ["username", "displayName"]);
   if (["student", "lecturer", "admin"].includes(req.query.role))
