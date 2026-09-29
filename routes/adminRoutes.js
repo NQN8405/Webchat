@@ -17,6 +17,10 @@ router.get("/majors", controller.getMajors);
 router.post("/majors", controller.saveMajor);
 router.post("/majors/:id/update", controller.saveMajor);
 router.post("/majors/:id/toggle-status", controller.toggleMajor);
+router.get("/classes", controller.getClasses);
+router.post("/classes", controller.saveClass);
+router.post("/classes/:id/update", controller.saveClass);
+router.post("/classes/:id/toggle-status", controller.toggleClass);
 
 router.use((error, req, res, next) => {
   if (res.headersSent || req.method !== "POST") return next(error);

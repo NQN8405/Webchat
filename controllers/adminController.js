@@ -150,6 +150,62 @@ exports.toggleMajor = async (req, res) => {
   await item.save();
   await finish(req, res, "/admin/majors", "Đã đổi trạng thái ngành.");
 };
+exports.getClasses = async (req, res) => {
+  const filter = searchFilter(req.query, ["code", "name"]);
+  if (text(req.query.majorId))
+    filter.majorId = objectId(req.query.majorId, "Ngành");
+  await page(
+    req,
+    res,
+    "classes",
+    await StudentClass.find(filter)
+      .populate({ path: "majorId", populate: { path: "departmentId" } })
+      .populate("homeroomTeacherId")
+      .sort({ code: 1 }),
+  );
+};
+exports.saveClass = async (req, res) => {
+  const item = req.params.id
+    ? await findRecord(StudentClass, req.params.id)
+    : new StudentClass();
+  const majorId = objectId(text(req.body.majorId), "Ngành");
+  if (!sameId(item.majorId, majorId)) await getActiveMajor(majorId);
+  else
+    requireValue(await Major.exists({ _id: majorId }), "Ngành không tồn tại.");
+  const teacherId = text(req.body.homeroomTeacherId);
+  if (teacherId) {
+    objectId(teacherId, "Giảng viên");
+    requireValue(
+      await User.exists({
+        _id: teacherId,
+        role: "lecturer",
+        ...(sameId(item.homeroomTeacherId, teacherId)
+          ? {}
+          : { status: "active" }),
+      }),
+      "Giảng viên không hoạt động.",
+    );
+  }
+  Object.assign(item, catalogFields(req.body), {
+    majorId,
+    homeroomTeacherId: teacherId || undefined,
+  });
+  await item.save();
+  await finish(req, res, "/admin/classes", "Đã lưu lớp và đồng bộ kênh chung.");
+};
+exports.toggleClass = async (req, res) => {
+  const item = await findRecord(StudentClass, req.params.id);
+  if (item.status !== "active") await getActiveMajor(String(item.majorId));
+  item.status = item.status === "active" ? "inactive" : "active";
+  await item.save();
+  await finish(
+    req,
+    res,
+    "/admin/classes",
+    "Đã đổi trạng thái lớp. Kích hoạt lớp không tự mở lại kênh.",
+  );
+};
+
 exports.getUsers = async (req, res) => {
   const filter = searchFilter(req.query, ["username", "displayName"]);
   if (["student", "lecturer", "admin"].includes(req.query.role))
