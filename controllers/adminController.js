@@ -289,3 +289,75 @@ exports.toggleUser = async (req, res) => {
   await item.save();
   await finish(req, res, "/admin/users", "Đã đổi trạng thái tài khoản.");
 };
+exports.getClassStudents = async (req, res) => {
+  const classId = text(req.query.classId);
+  let selectedClass = null,
+    students = [],
+    availableStudents = [];
+  if (classId) {
+    selectedClass = await findRecord(StudentClass, classId);
+    [students, availableStudents] = await Promise.all([
+      User.find({ role: "student", classId }).sort({ displayName: 1 }),
+      User.find({ role: "student", status: "active", classId: null }).sort({
+        displayName: 1,
+      }),
+    ]);
+  }
+  await page(
+    req,
+    res,
+    selectedClass ? "classStudentsDetail" : "classStudents",
+    students,
+    {
+      selectedClass,
+      assignedStudents: students,
+      availableStudents,
+    },
+  );
+};
+exports.assignStudents = async (req, res) => {
+  const item = await getActiveClass(text(req.body.classId));
+  const rawIds = Array.isArray(req.body.studentIds)
+    ? req.body.studentIds
+    : [req.body.studentIds];
+  const ids = [
+    ...new Set(rawIds.filter(Boolean).map((id) => objectId(id, "Sinh viên"))),
+  ];
+  requireValue(ids.length > 0, "Chọn ít nhất một sinh viên.");
+  requireValue(
+    (await User.countDocuments({
+      _id: { $in: ids },
+      role: "student",
+      status: "active",
+    })) === ids.length,
+    "Danh sách có sinh viên không hợp lệ; chưa chuyển lớp.",
+  );
+  await User.updateMany(
+    { _id: { $in: ids } },
+    {
+      $set: { classId: item._id, departmentId: item.majorId.departmentId._id },
+    },
+  );
+  await finish(
+    req,
+    res,
+    "/admin/class-students?classId=" + item.id,
+    "Đã phân/chuyển sinh viên và cập nhật quyền chat.",
+  );
+};
+exports.removeStudent = async (req, res) => {
+  const classId = objectId(text(req.body.classId), "Lớp");
+  const student = await findRecord(User, req.params.id);
+  requireValue(
+    student.role === "student" && sameId(student.classId, classId),
+    "Sinh viên không thuộc lớp này.",
+  );
+  student.classId = undefined;
+  await student.save();
+  await finish(
+    req,
+    res,
+    "/admin/class-students?classId=" + classId,
+    "Đã bỏ sinh viên khỏi lớp; giữ nguyên lịch sử tin nhắn.",
+  );
+};

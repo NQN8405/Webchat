@@ -1,0 +1,18 @@
+<%- include('_start',{title:'Sinh viên trong lớp',section:'class-students',description:'Chọn lớp để phân, chuyển hoặc bỏ sinh viên. Thành viên kênh sẽ được cập nhật theo lớp.'}) %>
+<div class="class-grid">
+  <% if(!classes.length){ %>
+  <section class="panel empty card text-center">Chưa có lớp đang hoạt động.</section>
+  <% } classes.forEach(row=>{ %>
+  <a class="class-card card" href="/admin/class-students?classId=<%= row._id %>">
+    <span class="code"><%= row.code %></span>
+    <h2><%= row.name %></h2>
+    <p><%= row.homeroomTeacherId?.displayName || 'Chưa phân công chủ nhiệm' %></p>
+    <div>
+      <strong><%= row.studentCount %></strong>
+      sinh viên
+      <span>Quản lý →</span>
+    </div>
+  </a>
+  <% }) %>
+</div>
+<%- include('_end') %>

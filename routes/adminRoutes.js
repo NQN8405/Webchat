@@ -21,6 +21,9 @@ router.get("/classes", controller.getClasses);
 router.post("/classes", controller.saveClass);
 router.post("/classes/:id/update", controller.saveClass);
 router.post("/classes/:id/toggle-status", controller.toggleClass);
+router.get("/class-students", controller.getClassStudents);
+router.post("/class-students/assign", controller.assignStudents);
+router.post("/class-students/:id/remove", controller.removeStudent);
 
 router.use((error, req, res, next) => {
   if (res.headersSent || req.method !== "POST") return next(error);

@@ -1,0 +1,92 @@
+<%- include('_start',{title:'Sinh viên · ' + selectedClass.code,section:'class-students',description:'Phân sinh viên vào lớp và tự đồng bộ khoa và kênh chung của lớp.'}) %>
+<a class="text-link back-link d-inline-flex align-items-center" href="/admin/class-students">
+  <i class="bi bi-arrow-left" aria-hidden="true"></i>
+  Danh sách lớp
+</a>
+<div class="two-columns">
+  <section class="panel card">
+    <div class="panel-toolbar d-flex justify-content-between align-items-center gap-3">
+      <div>
+        <h2><%= selectedClass.name %></h2>
+        <span class="muted">
+          <%= assignedStudents.length %>
+          sinh viên
+        </span>
+      </div>
+    </div>
+    <div class="table-wrap table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Sinh viên</th>
+            <th>Trạng thái</th>
+            <th>Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if(!assignedStudents.length){ %>
+          <tr><td colspan="3" class="empty text-center">Lớp chưa có sinh viên.</td></tr>
+          <% } assignedStudents.forEach(row=>{ %>
+          <tr>
+            <td>
+              <strong><%= row.displayName %></strong>
+              <small><%= row.username %></small>
+            </td>
+            <td>
+              <span class="pill <%= row.status==='active'?'active':'closed' %> badge rounded-pill d-inline-flex align-items-center gap-2"><%= row.status==='active'?'Hoạt động':'Đã khóa' %></span>
+            </td>
+            <td>
+              <form
+                action="/admin/class-students/<%= row._id %>/remove"
+                method="POST"
+                data-confirm="Bỏ sinh viên khỏi lớp và các kênh của lớp?"
+              >
+                <%- include('_csrf') %>
+                <input type="hidden" name="classId" value="<%= selectedClass._id %>" />
+                <button class="btn btn-outline-danger d-inline-flex align-items-center justify-content-center gap-2 btn-sm">
+                  <i class="bi bi-person-dash" aria-hidden="true"></i>
+                  Bỏ khỏi lớp
+                </button>
+              </form>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section class="panel card">
+    <div class="panel-toolbar d-flex justify-content-between align-items-center gap-3"><h2>Thêm sinh viên</h2></div>
+    <form method="POST" action="/admin/class-students/assign" class="panel-form">
+      <%- include('_csrf') %>
+      <input type="hidden" name="classId" value="<%= selectedClass._id %>" />
+      <p class="help">Chỉ hiển thị sinh viên chưa được xếp lớp.</p>
+      <label>
+        Tìm sinh viên
+        <input class="form-control" type="search" data-search-list placeholder="Tên hoặc tài khoản…" />
+      </label>
+      <div class="student-options">
+        <% availableStudents.forEach(row=>{ %>
+        <label class="d-flex align-items-center" data-student-option>
+          <input class="form-check-input" type="checkbox" name="studentIds" value="<%= row._id %>" />
+          <span>
+            <strong><%= row.displayName %></strong>
+            <small>
+              <%= row.username %>
+              · Chưa xếp lớp
+            </small>
+          </span>
+        </label>
+        <% }) %>
+        <% if(!availableStudents.length){ %>
+        <p class="empty text-center">Không có sinh viên chưa xếp lớp.</p>
+        <% } %>
+      </div>
+      <button class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-2" type="submit">
+        <i class="bi bi-person-plus" aria-hidden="true"></i>
+        Phân vào lớp
+      </button>
+    </form>
+  </section>
+</div>
+<%- include('_end') %>
