@@ -361,3 +361,40 @@ exports.removeStudent = async (req, res) => {
     "Đã bỏ sinh viên khỏi lớp; giữ nguyên lịch sử tin nhắn.",
   );
 };
+exports.getChannels = async (req, res) => {
+  const filter = { type: "class", ...searchFilter(req.query, ["name"]) };
+  if (text(req.query.classId))
+    filter.classId = objectId(req.query.classId, "Lớp");
+  const rows = await Channel.find(filter)
+    .populate("classId")
+    .sort({ createdAt: -1 });
+  const counts = await ChannelMember.aggregate([
+    { $group: { _id: "$channelId", count: { $sum: 1 } } },
+  ]);
+  await page(req, res, "channels", rows, {
+    countMap: Object.fromEntries(
+      counts.map((item) => [String(item._id), item.count]),
+    ),
+  });
+};
+exports.saveChannel = async (req, res) => {
+  const item = await findRecord(Channel, req.params.id);
+  requireValue(item.type === "class", "Kênh nằm ngoài phạm vi hiện tại.");
+  const name = requireValue(text(req.body.name), "Vui lòng nhập tên kênh.");
+  requireValue(name.length <= 150, "Tên kênh không được vượt quá 150 ký tự.");
+  item.name = name;
+  await item.save();
+  req.session.notice = "Đã cập nhật kênh.";
+  res.redirect("/admin/channels");
+};
+exports.toggleChannel = async (req, res) => {
+  const item = await findRecord(Channel, req.params.id);
+  requireValue(item.type === "class", "Kênh nằm ngoài phạm vi hiện tại.");
+  if (item.status === "closed") await getActiveClass(String(item.classId));
+  item.status = item.status === "active" ? "closed" : "active";
+  item.closedAt = item.status === "closed" ? new Date() : undefined;
+  await item.save();
+  classEvents.emit("changed");
+  req.session.notice = "Đã đổi trạng thái kênh; lịch sử được giữ nguyên.";
+  res.redirect("/admin/channels");
+};
