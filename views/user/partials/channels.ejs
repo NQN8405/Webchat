@@ -1,0 +1,78 @@
+<aside class="channel-sidebar d-flex flex-column" id="channel-sidebar" aria-label="Danh sách kênh">
+  <div class="channel-sidebar-heading d-flex align-items-center justify-content-between">
+    <div>
+      <h1>Kênh của bạn</h1>
+    </div>
+  </div>
+  <form action="/chat" method="GET" class="channel-search">
+    <label for="channel-query" class="visually-hidden">Tìm kênh hoặc lớp</label>
+    <% if(selected){ %>
+    <input type="hidden" name="channel" value="<%= selected._id %>" />
+    <% } %>
+    <div class="search-input">
+      <i class="bi bi-search" aria-hidden="true"></i>
+      <input class="form-control"
+        type="search"
+        id="channel-query"
+        name="search"
+        placeholder="Tìm kênh hoặc lớp…"
+        value="<%= filters.search %>"
+      />
+    </div>
+    <label class="visually-hidden" for="class-filter">Lọc theo lớp</label>
+    <select class="form-select" name="classId" id="class-filter">
+      <option value="">Tất cả lớp</option>
+      <% classes.forEach(s=>{ %>
+      <option value="<%= s._id %>" <%= filters.classId===String(s._id)?'selected':'' %>><%= s.code || s.name %></option>
+      <% }) %>
+    </select>
+    <button class="btn btn-light d-inline-flex align-items-center justify-content-center gap-2" type="submit">
+      <i class="bi bi-funnel" aria-hidden="true"></i>
+      Lọc kênh
+    </button>
+  </form>
+  <div class="channel-list flex-grow-1 overflow-y-auto">
+    <% if(!channels.length){ %>
+    <div class="channel-empty text-center">
+      <i class="bi bi-chat-square" aria-hidden="true"></i>
+      <p><%= filters.search || filters.classId ? 'Không có kênh phù hợp.' : 'Bạn chưa được thêm vào kênh.' %></p>
+      <% if(filters.search||filters.classId){ %>
+      <a class="text-link" href="/chat">Bỏ bộ lọc</a>
+      <% }else{ %>
+      <small>Kênh xuất hiện khi bạn được xếp lớp hoặc phân công chủ nhiệm.</small>
+      <% } %>
+    </div>
+    <% } %>
+    <% classes.forEach(server=>{const rows=channels.filter(c=>String(c.classId._id)===String(server._id));if(!rows.length)return; %>
+    <section class="channel-group">
+      <h2>
+        <i class="bi bi-mortarboard" aria-hidden="true"></i>
+        <%= server.code || server.name %>
+        <small><%= rows.length %></small>
+      </h2>
+      <% rows.forEach(c=>{ %>
+      <a href="/chat?<%= new URLSearchParams({ channel: String(c._id), search: filters.search, classId: filters.classId }).toString() %>" class="channel-link <%= selected&&String(selected._id)===String(c._id)?'selected':'' %> d-flex align-items-center" <%= selected&&String(selected._id)===String(c._id)?'aria-current=page':'' %>>
+        <span class="channel-symbol"><i class="bi bi-chat-dots" aria-hidden="true"></i></span>
+        <span class="channel-label">
+          <strong><%= c.name %></strong>
+          <small><%= c.status==='closed'?'Đã đóng':'Kênh chung' %></small>
+        </span>
+        <% if(c.status==='closed'){ %>
+        <span class="channel-lock" aria-label="Kênh đã đóng">
+          <i class="bi bi-lock" aria-hidden="true"></i>
+        </span>
+        <% } %>
+      </a>
+      <% }) %>
+    </section>
+    <% }) %>
+  </div>
+  <a class="sidebar-account d-flex align-items-center" href="/profile">
+    <%- include('avatar', { name: user.displayName, url: user.avatarUrl, css: 'user-avatar' }) %>
+    <span>
+      <strong><%= user.displayName %></strong>
+      <small><%= roles[user.role] %></small>
+    </span>
+    <i class="bi bi-chevron-right" aria-hidden="true"></i>
+  </a>
+</aside>

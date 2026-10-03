@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %> · WebChat</title>
+    <link rel="icon" type="image/png" href="/images/logo.png" />
+    <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/bootstrap-icons/bootstrap-icons.css" />
+    <link rel="stylesheet" href="/css/admin.css" />
+    <link rel="stylesheet" href="/css/user.css" />
+  </head>
+  <body class="user-page">
+    <div class="user-shell <%= tab==='chat' && selected ? 'has-members' : '' %>">
+      <aside class="user-rail d-flex flex-column align-items-center">
+        <a class="user-brand d-flex flex-column align-items-center" href="/" aria-label="Trang chính WebChat">
+          <img src="/images/logo.png" alt="" width="44" height="44" />
+          <strong>WebChat</strong>
+        </a>
+        <nav aria-label="Chức năng chính">
+          <a href="/chat" class="rail-link <%= tab==='chat'?'current':'' %>" <%= tab==='chat'?'aria-current=page':'' %>>
+            <i class="bi bi-chat-dots" aria-hidden="true"></i>
+            <span>Kênh chat</span>
+          </a>
+          <a href="/profile" class="rail-link <%= tab==='profile'?'current':'' %>" <%= tab==='profile'?'aria-current=page':'' %>>
+            <i class="bi bi-person-circle" aria-hidden="true"></i>
+            <span>Tài khoản</span>
+          </a>
+        </nav>
+        <form action="/logout" method="POST" class="rail-logout-form">
+          <input type="hidden" name="_csrf" value="<%= logoutToken %>" />
+          <button class="rail-link rail-logout">
+            <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+            <span>Đăng xuất</span>
+          </button>
+        </form>
+      </aside>

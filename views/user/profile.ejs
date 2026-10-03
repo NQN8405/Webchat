@@ -1,0 +1,117 @@
+<%- include('_start', { title: 'Tài khoản'}) %>
+<main class="user-content wide-content">
+  <header class="section-topbar d-flex align-items-center justify-content-between">
+    <span>WebChat / Tài khoản</span>
+    <span><%= user.displayName %></span>
+  </header>
+  <section class="user-section">
+    <h1>Thông tin tài khoản</h1>
+    <p class="section-description">Bạn có thể cập nhật tên hiển thị, ngày sinh và mật khẩu.</p>
+    <div class="profile-cards">
+      <form class="profile-card profile-form card d-block" action="/profile" method="POST">
+        <%- include('partials/avatar', { name: user.displayName, url: user.avatarUrl, css: 'profile-avatar' }) %>
+        <h2><%= user.displayName %></h2>
+        <span class="pill active badge rounded-pill d-inline-flex align-items-center gap-2"><%= roles[user.role] %></span>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <% if(profileFeedback){ %>
+        <p class="alert alert-<%= profileFeedback.type %>" role="alert"><%= profileFeedback.message %></p>
+        <% } %>
+        <label for="profile-display-name">Tên hiển thị</label>
+        <input class="form-control"
+          id="profile-display-name"
+          name="displayName"
+          value="<%= profileFeedback?.draft?.displayName ?? profile.displayName %>"
+          maxlength="100"
+          required
+          autocomplete="name"
+        />
+        <label for="profile-birth-date">Ngày sinh</label>
+        <input class="form-control"
+          id="profile-birth-date"
+          name="birthDate"
+          type="date"
+          value="<%= profileFeedback?.draft?.birthDate ?? (profile.birthDate ? new Date(profile.birthDate).toISOString().slice(0,10) : '') %>"
+          min="1900-01-01"
+          max="<%= new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Ho_Chi_Minh'}).format(new Date()) %>"
+          required
+          autocomplete="bday"
+        />
+        <button type="submit" class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-2">
+          <i class="bi bi-check-lg" aria-hidden="true"></i>
+          Lưu thông tin
+        </button>
+        <dl>
+          <div>
+            <dt>Tên đăng nhập</dt>
+            <dd><%= user.username %></dd>
+          </div>
+          <div>
+            <dt>Khoa</dt>
+            <dd><%= profile?.departmentId?.name || 'Chưa gán khoa' %></dd>
+          </div>
+          <% if(user.role === 'student'){ %>
+          <div>
+            <dt>Ngành</dt>
+            <dd><%= profile?.classId?.majorId?.name || 'Chưa gán ngành' %></dd>
+          </div>
+          <div>
+            <dt>Lớp</dt>
+            <dd><%= profile?.classId?.name || 'Chưa xếp lớp' %></dd>
+          </div>
+          <% } %>
+        </dl>
+        <p class="help">
+          Tên đăng nhập, vai trò và
+          <%= user.role === 'student' ? 'thông tin khoa/ngành/lớp' : 'khoa' %>
+          do quản trị viên quản lý.
+        </p>
+      </form>
+
+      <form class="profile-card password-form card d-block" action="/profile/password" method="POST">
+        <h2>Đổi mật khẩu</h2>
+        <p class="help" id="password-help">
+          Mật khẩu ban đầu là ngày sinh theo ddMMyyyy. Bạn nên đổi sau lần đăng nhập đầu tiên. Sửa
+          ngày sinh không đổi mật khẩu.
+        </p>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <% if(passwordFeedback){ %>
+        <p class="alert alert-<%= passwordFeedback.type %>" role="alert"><%= passwordFeedback.message %></p>
+        <% } %>
+        <label for="current-password">Mật khẩu hiện tại</label>
+        <input class="form-control"
+          id="current-password"
+          name="currentPassword"
+          type="password"
+          autocomplete="current-password"
+          required
+        />
+        <label for="new-password">Mật khẩu mới</label>
+        <input class="form-control"
+          id="new-password"
+          name="newPassword"
+          type="password"
+          autocomplete="new-password"
+          minlength="6"
+          maxlength="72"
+          required
+          aria-describedby="password-help"
+        />
+        <label for="confirm-password">Xác nhận mật khẩu mới</label>
+        <input class="form-control"
+          id="confirm-password"
+          name="confirmPassword"
+          type="password"
+          autocomplete="new-password"
+          minlength="6"
+          maxlength="72"
+          required
+        />
+        <button type="submit" class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-2">
+          <i class="bi bi-key" aria-hidden="true"></i>
+          Đổi mật khẩu
+        </button>
+      </form>
+    </div>
+  </section>
+</main>
+<%- include('_end') %>

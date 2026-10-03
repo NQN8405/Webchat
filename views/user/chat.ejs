@@ -1,0 +1,109 @@
+<%- include('_start', { title: selected.name}) %>
+<%- include('partials/channels') %>
+<main class="user-content chat-content d-flex flex-column">
+  <header class="chat-topbar d-flex align-items-center">
+    <span class="topbar-channel-icon"><i class="bi bi-chat-dots" aria-hidden="true"></i></span>
+    <div class="chat-title">
+      <h2><%= selected.name %></h2>
+      <p>
+        <%= selected.classId.name %>
+        ·
+        <%= members.length %>
+        thành viên
+      </p>
+    </div>
+    <span class="pill <%= writable?'active':'closed' %> badge rounded-pill d-inline-flex align-items-center gap-2"><%= writable?'Đang mở':'Đã đóng' %></span>
+  </header>
+  <% if(error){ %>
+  <div class="alert alert-danger user-alert" role="alert">
+    <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+    <%= error %>
+  </div>
+  <% } %>
+  <p id="chat-connection" class="realtime-status" role="status" aria-live="polite">Đang kết nối…</p>
+  <p id="chat-send-error" class="alert alert-danger user-alert" role="alert" hidden></p>
+  <section
+    class="message-history flex-grow-1 overflow-y-auto"
+    aria-label="Lịch sử tin nhắn"
+    data-channel-id="<%= selected._id %>"
+    data-user-id="<%= user.id %>"
+    data-token="<%= csrfToken %>"
+    data-writable="<%= writable %>"
+  >
+    <div class="history-load text-center">
+      <button id="load-older-messages" type="button" class="btn btn-light d-inline-flex align-items-center justify-content-center gap-2" disabled <%= hasMore ? '' : 'hidden' %>>
+        <i class="bi bi-clock-history" aria-hidden="true"></i>
+        Tải tin nhắn cũ
+      </button>
+      <p id="history-load-status" role="status" aria-live="polite"></p>
+    </div>
+    <% if(!messages.length){ %>
+    <p class="conversation-empty text-center">Chưa có tin nhắn trong kênh này.</p>
+    <% } %>
+    <% messages.forEach(m=>{const mine=String(m.senderId?._id)===user.id; %>
+    <article
+      class="message-row <%= mine?'mine':'' %>"
+      data-message-id="<%= m._id %>"
+      data-created-at="<%= m.createdAt.toISOString() %>"
+    >
+      <%- include('partials/avatar', { name: m.senderId?.displayName, url: m.senderId?.avatarUrl, css: 'message-avatar' }) %>
+      <div class="message-body">
+        <div class="message-meta">
+          <strong><%= mine?'Bạn':m.senderId?.displayName||'Người dùng' %></strong>
+          <time datetime="<%= m.createdAt.toISOString() %>"><%= m.createdAt.toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) %></time>
+        </div>
+        <div class="message-bubble">
+          <% if(m.content){ %>
+          <p><%= m.content %></p>
+          <% } %>
+        </div>
+        <% if(mine){ %>
+        <div class="message-actions">
+          <button type="button" class="message-action delete" data-message-action="delete" disabled>
+            <i class="bi bi-trash" aria-hidden="true"></i>
+            Xóa
+          </button>
+        </div>
+        <% } %>
+      </div>
+    </article>
+    <% }) %>
+  </section>
+  <form <%= writable ? '' : 'hidden' %> class="message-composer d-flex align-items-center" action="/channels/<%= selected._id %>/messages" method="POST">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+    <label for="message-content" class="visually-hidden">Nội dung tin nhắn</label>
+    <textarea class="form-control"
+      name="content"
+      id="message-content"
+      rows="2"
+      maxlength="4000"
+      required
+      <%= writable ? '' : 'disabled' %>
+      placeholder="Nhắn tin tới <%= selected.name %>…"
+    ></textarea>
+    <div class="composer-footer d-flex align-items-center justify-content-between">
+      <button type="submit" class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-2">
+        <i class="bi bi-send" aria-hidden="true"></i>
+        Gửi
+      </button>
+    </div>
+  </form>
+  <div class="closed-channel d-flex align-items-center justify-content-center" <%= writable ? 'hidden' : '' %>>
+    <i class="bi bi-lock" aria-hidden="true"></i>
+    <span>Kênh đã đóng. Bạn có thể xem lại lịch sử tin nhắn.</span>
+  </div>
+</main>
+<aside class="members-sidebar d-flex flex-column" aria-label="Danh sách thành viên">
+  <div class="members-heading d-flex align-items-center justify-content-between">
+    <h2>
+      Thành viên kênh
+      <small>
+        <%= members.length %>
+        người
+      </small>
+    </h2>
+  </div>
+  <%- include('partials/members', { members, roles }) %>
+</aside>
+
+<%- include('_end') %>

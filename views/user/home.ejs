@@ -1,0 +1,27 @@
+<%- include('_start', { title: 'Trang chủ'}) %>
+<%- include('partials/channels') %>
+<main class="user-content chat-content d-flex flex-column">
+  <header class="chat-topbar d-flex align-items-center">
+    <span class="chat-title">
+      <strong>Không gian trao đổi</strong>
+      <small>Kết nối lớp học của bạn</small>
+    </span>
+  </header>
+  <% if(error){ %>
+  <div class="alert alert-danger user-alert" role="alert">
+    <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+    <%= error %>
+  </div>
+  <% } %>
+  <section class="welcome-panel d-flex flex-column align-items-center justify-content-center text-center">
+    <img src="/images/logo.png" alt="" width="90" height="90" />
+    <span class="eyebrow">CHÀO MỪNG ĐẾN WEBCHAT</span>
+    <h2>
+      Xin chào,
+      <%= user.displayName %>
+      !
+    </h2>
+    <p>Chọn một kênh bên trái để trao đổi với giảng viên và bạn học.</p>
+  </section>
+</main>
+<%- include('_end') %>

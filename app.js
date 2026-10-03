@@ -43,7 +43,7 @@ function createApp() {
   const io = null;
   app.use(require("./routes/authRoutes"));
   app.use("/admin", require("./routes/adminRoutes"));
-  app.get("/", require("./middleware/authMiddleware").requireAuth, (req,res) => res.send("WebChat"));
+  app.use(require("./routes/userRoutes"));
   app.use((req, res) =>
     res.status(404).render("error", {
       title: "Không tìm thấy trang",

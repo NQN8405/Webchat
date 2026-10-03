@@ -1,0 +1,716 @@
+.user-page {
+  height: 100vh;
+  overflow: hidden;
+  background: #fff;
+}
+/* Bố cục ứng dụng và menu chính */
+.user-shell {
+  display: grid;
+  grid-template-columns: 88px 300px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  height: 100%;
+  min-width: 0;
+}
+.user-rail {
+  min-height: 0;
+  overflow: hidden;
+  gap: 32px;
+  background: #142c35;
+  color: #c4d4d7;
+  padding: 24px 10px;
+  grid-row: 1;
+  height: 100%;
+  z-index: 30;
+}
+.user-brand {
+  flex-shrink: 0;
+  gap: 6px;
+  font-size: 11px;
+  color: #e1eeee;
+}
+.user-brand img {
+  object-fit: contain;
+  display: block;
+}
+.user-rail nav {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  align-content: start;
+  padding: 3px;
+  display: grid;
+  gap: 12px;
+  width: 100%;
+}
+.rail-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 66px;
+  padding: 10px 4px;
+  border-radius: 10px;
+  font-size: 10px;
+  white-space: nowrap;
+}
+.rail-link > .bi {
+  font-size: 23px;
+}
+.rail-link:hover {
+  background: #223f49;
+  color: #fff;
+}
+.rail-link.current {
+  background: #286356;
+  color: #fff;
+}
+.rail-logout {
+  margin-top: auto;
+  width: 100%;
+}
+/* Danh sách lớp/kênh */
+.channel-sidebar {
+  min-height: 0;
+  background: #f8fafb;
+  border-right: 1px solid var(--line);
+}
+.channel-sidebar-heading {
+  padding: 26px 22px 16px;
+}
+.channel-sidebar-heading h1 {
+  font-size: 22px;
+  letter-spacing: -0.5px;
+  margin: 6px 0;
+}
+.channel-search {
+  padding: 0 20px 20px;
+  display: grid;
+  gap: 10px;
+}
+.search-input {
+  position: relative;
+}
+.search-input > .bi {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+}
+.search-input input {
+  padding-left: 36px;
+  margin: 0;
+  min-height: 40px;
+  font-size: 12px;
+}
+.channel-search select {
+  margin: 0;
+  font-size: 12px;
+  min-height: 38px;
+}
+.channel-search .btn {
+  min-height: 34px;
+  padding: 7px 12px;
+  font-size: 11px;
+}
+.channel-list {
+  min-height: 0;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  padding: 0 12px 20px;
+}
+.channel-group {
+  margin: 12px 0 22px;
+}
+.channel-group h2 {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 11px;
+  color: var(--muted);
+  padding: 0 10px 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.channel-group h2 small {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 400;
+}
+.channel-link {
+  gap: 12px;
+  padding: 13px 10px;
+  margin: 4px 0;
+  border-radius: 9px;
+  border: 1px solid transparent;
+}
+.channel-link:hover {
+  background: #edf3f2;
+}
+.channel-link.selected {
+  background: #e5f1ed;
+  border-color: #d2e5dd;
+}
+.channel-symbol {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #eaf0f2;
+  color: #617383;
+  font-size: 18px;
+}
+.selected .channel-symbol {
+  background: #d1e8df;
+  color: var(--brand);
+}
+.channel-label {
+  min-width: 0;
+}
+.channel-label strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.channel-label small {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.channel-lock {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 12px;
+}
+.sidebar-account {
+  gap: 10px;
+  background: #fff;
+  border-top: 1px solid var(--line);
+  padding: 18px;
+}
+.user-avatar {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  background: #e0efea;
+  color: var(--brand);
+  border-radius: 50%;
+  font-weight: 600;
+}
+.sidebar-account strong {
+  display: block;
+  font-size: 12px;
+}
+.sidebar-account small {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+}
+.sidebar-account > .bi {
+  margin-left: auto;
+  font-size: 12px;
+}
+.channel-empty {
+  padding: 36px 16px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.channel-empty > .bi {
+  font-size: 30px;
+  color: #91a7ae;
+}
+.channel-empty small {
+  font-size: 11px;
+}
+.user-content {
+  min-width: 0;
+  min-height: 0;
+}
+
+.chat-topbar {
+  height: 80px;
+  min-height: 80px;
+  border-bottom: 1px solid var(--line);
+  gap: 14px;
+  padding: 16px 28px;
+  background: #fff;
+}
+.topbar-channel-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  background: #eaf3ef;
+  color: var(--brand);
+  border-radius: 12px;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.chat-title {
+  min-width: 0;
+  flex: 1;
+}
+.chat-title h2 {
+  font-size: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chat-title p,
+.chat-title small {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  margin: 4px 0 0;
+}
+
+.user-alert {
+  margin: 16px 28px 0;
+  flex-shrink: 0;
+}
+.welcome-panel {
+  flex: 1;
+  padding: 30px;
+  overflow-y: auto;
+  background: #fcfdfd;
+}
+.welcome-panel > img {
+  object-fit: contain;
+  margin-bottom: 26px;
+}
+.welcome-panel h2 {
+  font-size: 27px;
+  letter-spacing: -0.6px;
+  margin: 14px 0 12px;
+}
+.welcome-panel > p {
+  font-size: 13px;
+  color: var(--muted);
+  max-width: 420px;
+  margin: 0;
+}
+/* Trạng thái kết nối realtime */
+.realtime-status {
+  margin: 0;
+  padding: 9px 16px;
+  background: #f4f9f6;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 11px;
+  flex-shrink: 0;
+}
+/* Lịch sử hội thoại */
+.message-history {
+  min-height: 0;
+  padding: 28px 34px;
+}
+.conversation-empty {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 20px 0;
+}
+.message-row {
+  display: flex;
+  gap: 12px;
+  margin: 20px 0;
+  align-items: flex-start;
+}
+.message-avatar {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #edf1f4;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+.message-body {
+  max-width: min(78%, 680px);
+  min-width: 0;
+}
+.message-meta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-size: 11px;
+  margin-bottom: 7px;
+}
+.message-meta strong {
+  font-weight: 600;
+}
+.message-meta time {
+  color: var(--muted);
+  font-size: 10px;
+}
+.message-bubble {
+  background: #f2f5f7;
+  border: 1px solid #e8eef0;
+  border-radius: 0 12px 12px 12px;
+  padding: 12px 15px;
+  overflow-wrap: anywhere;
+}
+.message-bubble p {
+  white-space: pre-wrap;
+  margin: 0;
+  font-size: 13px;
+}
+.mine {
+  flex-direction: row-reverse;
+}
+.mine .message-meta {
+  justify-content: flex-end;
+}
+.mine .message-bubble {
+  background: #e5f2eb;
+  border-color: #d8e9e0;
+  border-radius: 12px 0 12px 12px;
+}
+.mine .message-avatar {
+  background: #d9ebe3;
+  color: var(--brand);
+}
+/* Ô soạn tin nhắn */
+.message-composer {
+  gap: 12px;
+  margin: 0 28px 24px;
+  border: 1px solid #ccd8de;
+  border-radius: 12px;
+  padding: 14px;
+  background: #fff;
+  flex-shrink: 0;
+}
+.message-composer:focus-within {
+  border-color: #5eaaa1;
+  box-shadow: 0 0 0 2px #5eaaa11a;
+}
+.message-composer textarea {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  border-radius: 0;
+  outline: 0;
+  resize: vertical;
+  min-height: 50px;
+  max-height: 180px;
+  margin: 0;
+  padding: 4px;
+  font-size: 13px;
+  box-shadow: none;
+}
+.message-composer textarea:focus-visible {
+  outline: none;
+}
+.composer-footer {
+  flex-shrink: 0;
+  gap: 12px;
+  margin-top: 0;
+}
+.closed-channel {
+  gap: 10px;
+  background: #f5f7f8;
+  color: var(--muted);
+  padding: 22px;
+  font-size: 12px;
+  border-top: 1px solid var(--line);
+}
+.members-heading {
+  padding: 24px;
+  border-bottom: 1px solid var(--line);
+}
+.members-heading small {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 400;
+  margin-top: 4px;
+}
+.members-list {
+  padding: 12px 24px 24px;
+  overflow-y: auto;
+}
+.member-row {
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid #edf1f3;
+}
+.member-row strong {
+  font-size: 13px;
+}
+.member-row small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+}
+/* Trang tài khoản */
+.wide-content {
+  grid-column: 2 / 4;
+  overflow-y: auto;
+  background: var(--surface);
+}
+.section-topbar {
+  height: 64px;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+  padding: 0 36px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.user-section {
+  padding: 36px;
+  max-width: 1400px;
+  margin: auto;
+}
+.user-section h1 {
+  font-size: 28px;
+}
+.section-description {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 30px;
+}
+.profile-card {
+  max-width: 580px;
+  padding: 32px;
+  border-radius: 14px;
+}
+.profile-avatar {
+  display: grid;
+  place-items: center;
+  width: 68px;
+  height: 68px;
+  background: #e5f1ed;
+  color: var(--brand);
+  border-radius: 50%;
+  font-size: 27px;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+.profile-card h2 {
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+.profile-card dl {
+  margin-top: 26px;
+}
+.profile-card dl > div {
+  display: grid;
+  grid-template-columns: 140px minmax(0, 1fr);
+  border-top: 1px solid var(--line);
+  padding: 15px 0;
+  gap: 10px;
+  font-size: 13px;
+}
+.profile-card dt {
+  color: var(--muted);
+}
+.profile-card dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 1100px) {
+  .user-shell {
+    grid-template-columns: 80px 260px minmax(0, 1fr);
+  }
+  .user-rail {
+    padding-inline: 8px;
+  }
+  .chat-topbar {
+    padding-inline: 20px;
+    gap: 10px;
+  }
+  .message-history {
+    padding: 22px;
+  }
+  .message-composer {
+    margin-inline: 20px;
+  }
+  .welcome-panel {
+    padding: 24px;
+  }
+}
+
+.rail-logout-form {
+  width: 100%;
+  flex-shrink: 0;
+  margin-top: auto;
+}
+.rail-logout-form .rail-link {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 10px;
+  color: inherit;
+  cursor: pointer;
+}
+
+.rail-logout-form .rail-link:hover {
+  background: #223f49;
+  color: #fff;
+}
+
+/* Danh sách thành viên cố định ở bên phải khung chat. */
+.user-shell.has-members {
+  grid-template-columns: 88px 300px minmax(0, 1fr) 220px;
+}
+.members-sidebar {
+  min-width: 0;
+  min-height: 0;
+  background: #f8fafb;
+  border-left: 1px solid var(--line);
+}
+.members-sidebar .members-heading {
+  padding: 26px 20px;
+  min-height: 80px;
+  flex-shrink: 0;
+}
+.members-sidebar .members-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 8px 20px 20px;
+}
+.members-sidebar .member-row > span:last-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.members-sidebar .user-avatar {
+  flex-shrink: 0;
+}
+@media (max-width: 1100px) {
+  .user-shell.has-members {
+    grid-template-columns: 80px 260px minmax(0, 1fr) 190px;
+  }
+}
+
+/* Giữ tiêu đề, tìm kiếm và tài khoản ngoài vùng cuộn. */
+.channel-sidebar-heading,
+.channel-search,
+.sidebar-account {
+  flex-shrink: 0;
+}
+.members-list {
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+/* Nhóm giảng viên nằm trước nhóm sinh viên. */
+.member-group + .member-group {
+  margin-top: 24px;
+}
+.member-group-heading {
+  gap: 8px;
+  margin: 12px 0 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.member-group-count {
+  min-width: 22px;
+  padding: 2px 7px;
+  border-radius: 12px;
+  background: #e0efea;
+  color: var(--brand);
+  text-align: center;
+  font-size: 11px;
+}
+.member-group-empty {
+  margin: 12px 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* Thao tác chỉ hiển thị dưới tin nhắn của chính người gửi. */
+.message-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 6px;
+}
+.message-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 32px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.message-action:hover {
+  background: #edf3f2;
+  color: var(--brand);
+}
+.message-action.delete:hover {
+  color: #b42318;
+}
+.message-action:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.profile-cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.profile-cards > .profile-card {
+  min-width: 0;
+  max-width: none;
+}
+.password-form label {
+  margin-top: 16px;
+}
+.password-form button {
+  margin-top: 24px;
+}
+
+/* Tải lịch sử theo từng đợt, không giới hạn các tin đã tải trên màn hình. */
+.history-load {
+  margin-bottom: 20px;
+}
+#history-load-status {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+#history-load-status:empty {
+  display: none;
+}
+
+.profile-form label {
+  margin-top: 16px;
+}
+.profile-form > button {
+  margin-top: 20px;
+}
+.avatar-image {
+  position: relative;
+  overflow: hidden;
+}
+.avatar-image img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

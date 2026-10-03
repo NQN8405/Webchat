@@ -1,0 +1,10 @@
+const express=require("express");
+const {requireAuth,csrf}=require("../middleware/authMiddleware");
+const c=require("../controllers/userController");
+const r=express.Router();
+const guard=[requireAuth,(req,res,next)=>req.session.user.role==="admin"?res.redirect("/admin/users"):next(),csrf("chatCsrfToken")];
+r.get("/",...guard,c.getHome);
+r.get("/profile",...guard,c.getProfile);
+r.post("/profile",...guard,c.updateProfile);
+r.post("/profile/password",...guard,c.changePassword);
+module.exports=r;

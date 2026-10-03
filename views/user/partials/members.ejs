@@ -1,0 +1,30 @@
+<div class="members-list">
+  <% const groups = [
+    { role: 'lecturer', label: 'Giảng viên' },
+    { role: 'student', label: 'Sinh viên' }
+  ];
+  if(members.some(m=>m.userId.role==='admin')) groups.push({ role: 'admin', label: 'Quản trị viên' });
+  groups.forEach(group=>{ const rows=members.filter(m=>m.userId.role===group.role); %>
+  <section class="member-group" aria-label="<%= group.label %>">
+    <h3 class="member-group-heading d-flex align-items-center justify-content-between">
+      <span><%= group.label %></span>
+      <span class="member-group-count"><%= rows.length %></span>
+    </h3>
+    <% if(!rows.length){ %>
+    <p class="member-group-empty">
+      Chưa có
+      <%= group.label.toLocaleLowerCase('vi') %>
+      .
+    </p>
+    <% } rows.forEach(m=>{ %>
+    <div class="member-row d-flex align-items-center">
+      <%- include('avatar', { name: m.userId.displayName, url: m.userId.avatarUrl, css: 'user-avatar' }) %>
+      <span>
+        <strong><%= m.userId.displayName %></strong>
+        <small><%= roles[m.userId.role] %></small>
+      </span>
+    </div>
+    <% }) %>
+  </section>
+  <% }) %>
+</div>

@@ -1,0 +1,6 @@
+<span class="<%= css %> avatar-image">
+  <%= (name || '?').slice(0,1) %>
+  <% if(url){ %>
+  <img src="<%= url %>" alt="" referrerpolicy="no-referrer" onerror="this.remove()" />
+  <% } %>
+</span>
