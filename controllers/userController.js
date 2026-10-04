@@ -3,6 +3,7 @@ const User = require("../models/User");
 const Channel = require("../models/Channel");
 const ChannelMember = require("../models/ChannelMember");
 const { text, birthDate } = require("../services/validation");
+const { channelAccess, saveMessage, messagePage } = require("./chatMessages");
 
 const roles = { student: "Sinh viên", lecturer: "Giảng viên", admin: "Quản trị viên" };
 
@@ -51,6 +52,25 @@ exports.getHome = async (req, res) => {
   renderPage(res, "home", await loadChannels(req));
 };
 
+exports.getChat = async (req, res) => {
+  const data = await loadChannels(req);
+  const channelId = text(req.query.channel);
+  if (!channelId) return renderPage(res, "home", data);
+  const access = await channelAccess(channelId, req.session.user.id);
+  const [page, memberships] = await Promise.all([
+    messagePage(channelId),
+    ChannelMember.find({ channelId }).populate("userId", "displayName avatarUrl role status"),
+  ]);
+  renderPage(res, "chat", {
+    ...data,
+    selected: access.channel,
+    writable: access.writable,
+    messages: page.messages,
+    hasMore: page.hasMore,
+    members: memberships.filter((member) => member.userId?.status === "active"),
+  });
+};
+
 exports.getProfile = async (req, res) => {
   const profile = await User.findById(req.session.user.id)
     .populate("departmentId")
@@ -60,6 +80,14 @@ exports.getProfile = async (req, res) => {
   const profileFeedback = req.session.profileFeedback || null;
   delete req.session.profileFeedback;
   renderPage(res, "profile", { tab: "profile", profile, passwordFeedback, profileFeedback });
+};
+
+exports.sendMessage = async (req, res) => {
+  const message = await saveMessage(req.params.id, req.session.user.id, req.body.content);
+  await req.app.locals
+    .publishChatMessage?.(message)
+    .catch((error) => console.error("Chat publish:", error.message));
+  res.redirect("/chat?channel=" + req.params.id);
 };
 
 exports.changePassword = async (req, res) => {
