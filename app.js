@@ -7,6 +7,7 @@ const session = require("express-session");
 const bcrypt = require("bcrypt");
 const connectDB = require("./config/db");
 const User = require("./models/User");
+const { attachChat } = require("./controllers/chatSocket");
 const { syncClasses } = require("./services/classService");
 
 function createApp() {
@@ -40,7 +41,7 @@ function createApp() {
     next();
   });
   const server = createServer(app);
-  const io = null;
+  const io = attachChat(server, sessionMiddleware, app);
   app.use(require("./routes/authRoutes"));
   app.use("/admin", require("./routes/adminRoutes"));
   app.use(require("./routes/userRoutes"));
