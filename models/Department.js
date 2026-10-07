@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+// Danh mục khoa; mã duy nhất và được chuẩn hóa thành chữ hoa khi lưu.
 const departmentSchema = new mongoose.Schema(
   {
     code: { type: String, required: true, unique: true, trim: true, uppercase: true },

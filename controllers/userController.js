@@ -7,6 +7,7 @@ const { channelAccess, saveMessage, messagePage } = require("./chatMessages");
 
 const roles = { student: "Sinh viên", lecturer: "Giảng viên", admin: "Quản trị viên" };
 
+// Dữ liệu dùng chung cho trang chào mừng và danh sách kênh.
 async function loadChannels(req) {
   const memberships = await ChannelMember.find({ userId: req.session.user.id }).select("channelId");
   const allChannels = await Channel.find({
@@ -35,6 +36,7 @@ async function loadChannels(req) {
   );
   return { channels, classes, filters: { search: text(req.query.search), classId } };
 }
+// Cấp dữ liệu mặc định cho layout User; dữ liệu từng trang ghi đè các giá trị này.
 function renderPage(res, view, data = {}) {
   res.render("user/" + view, {
     roles,
@@ -48,10 +50,12 @@ function renderPage(res, view, data = {}) {
   });
 }
 
+// Trang chủ hiển thị lời chào và danh sách kênh được phép truy cập.
 exports.getHome = async (req, res) => {
   renderPage(res, "home", await loadChannels(req));
 };
 
+// Kiểm tra quyền kênh rồi lấy lịch sử và thành viên; chưa chọn kênh thì hiển thị lời chào.
 exports.getChat = async (req, res) => {
   const data = await loadChannels(req);
   const channelId = text(req.query.channel);
@@ -71,6 +75,7 @@ exports.getChat = async (req, res) => {
   });
 };
 
+// Lấy hồ sơ cùng thông báo riêng của hai biểu mẫu; xóa thông báo sau khi đọc.
 exports.getProfile = async (req, res) => {
   const profile = await User.findById(req.session.user.id)
     .populate("departmentId")
@@ -82,6 +87,7 @@ exports.getProfile = async (req, res) => {
   renderPage(res, "profile", { tab: "profile", profile, passwordFeedback, profileFeedback });
 };
 
+// Nhận tin nhắn từ biểu mẫu HTTP, lưu và phát tới các kết nối đang xem kênh.
 exports.sendMessage = async (req, res) => {
   const message = await saveMessage(req.params.id, req.session.user.id, req.body.content);
   await req.app.locals
@@ -90,6 +96,7 @@ exports.sendMessage = async (req, res) => {
   res.redirect("/chat?channel=" + req.params.id);
 };
 
+// Đổi mật khẩu của tài khoản đang đăng nhập; không nhận userId từ biểu mẫu.
 exports.changePassword = async (req, res) => {
   const { currentPassword, newPassword, confirmPassword } = req.body;
   const fail = (message) => {
@@ -110,6 +117,7 @@ exports.changePassword = async (req, res) => {
     return fail("Mật khẩu hiện tại không đúng.");
   if (currentPassword === newPassword) return fail("Mật khẩu mới phải khác mật khẩu hiện tại.");
   const hashedPassword = await bcrypt.hash(newPassword, 10);
+  // Chỉ ghi nếu mật khẩu chưa bị đổi bởi yêu cầu khác và tài khoản vẫn hoạt động.
   const result = await User.updateOne(
     { _id: account._id, hashedPassword: account.hashedPassword, status: "active" },
     { hashedPassword },
@@ -120,6 +128,7 @@ exports.changePassword = async (req, res) => {
   res.redirect("/profile");
 };
 
+// Chỉ cập nhật các trường cá nhân được cho phép, không nhận quyền/lớp từ biểu mẫu.
 exports.updateProfile = async (req, res) => {
   const displayName = text(req.body.displayName);
   const birthDateInput = text(req.body.birthDate);

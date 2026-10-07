@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+// Tin nhắn văn bản gắn với kênh và người gửi; timestamps tự quản lý thời điểm lưu.
 const messageSchema = new mongoose.Schema(
   {
     channelId: { type: mongoose.Schema.Types.ObjectId, ref: "Channel", required: true },
@@ -7,5 +8,6 @@ const messageSchema = new mongoose.Schema(
   },
   { timestamps: true, collection: "messages" },
 );
+// Chỉ mục hỗ trợ tìm theo kênh và tải lịch sử theo thời gian/id.
 messageSchema.index({ channelId: 1, createdAt: -1, _id: -1 });
 module.exports = mongoose.model("Message", messageSchema);

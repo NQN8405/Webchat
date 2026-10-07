@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+// Kênh chung của lớp; active cho phép chat, closed giữ lịch sử để xem lại.
 const channelSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
@@ -10,5 +11,6 @@ const channelSchema = new mongoose.Schema(
   },
   { timestamps: true, collection: "channels" },
 );
+// Index có điều kiện: có thể thêm loại kênh khác sau này mà không đổi tên collection.
 channelSchema.index({ classId: 1 }, { unique: true, partialFilterExpression: { type: "class" } });
 module.exports = mongoose.model("Channel", channelSchema);

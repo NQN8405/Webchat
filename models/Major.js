@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+// Mỗi ngành tham chiếu một khoa; các lớp tham chiếu ngành qua majorId.
 const majorSchema = new mongoose.Schema(
   {
     code: { type: String, required: true, unique: true, trim: true, uppercase: true },

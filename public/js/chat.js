@@ -1,5 +1,6 @@
 const history = document.querySelector(".message-history");
 if (history) history.scrollTop = history.scrollHeight;
+// Enter gửi tin, Shift + Enter xuống dòng; không gửi khi đang ghép ký tự bằng bộ gõ.
 document.getElementById("message-content")?.addEventListener("keydown", (e) => {
   if (e.key === "Enter" && !e.shiftKey && !e.isComposing) {
     e.preventDefault();
@@ -7,6 +8,7 @@ document.getElementById("message-content")?.addEventListener("keydown", (e) => {
   }
 });
 
+// Socket chỉ mở khi đang xem một kênh. Nội dung nhận về luôn gán textContent để tránh XSS.
 if (history && typeof io === "function") {
   const channelId = history.dataset.channelId,
     userId = history.dataset.userId;
@@ -19,6 +21,7 @@ if (history && typeof io === "function") {
   const olderButton = document.getElementById("load-older-messages");
   const loadStatus = document.getElementById("history-load-status");
   const olderButtonHTML = olderButton.innerHTML;
+  // Theo dõi mốc lịch sử và đợt kết nối để bỏ kết quả tải cũ sau khi kết nối lại.
   let hasMore = false,
     cursor = null,
     loadingOlder = false,
@@ -40,6 +43,7 @@ if (history && typeof io === "function") {
     errorBox.textContent = message || "";
     errorBox.hidden = !message;
   };
+  // Bật/tắt nút gửi, xóa, tải thêm và ô nhập theo kết nối, quyền và thao tác đang chạy.
   function controls() {
     olderButton.hidden = !hasMore;
     olderButton.disabled = !joined || denied || loadingOlder;
@@ -58,6 +62,7 @@ if (history && typeof io === "function") {
       button.disabled = !joined || !writable || deleting;
     });
   }
+  // Thêm tin đúng thứ tự, bỏ tin trùng/đã xóa; chỉ cuộn xuống khi cần.
   function renderMessage(message, scroll = true) {
     const nearBottom = history.scrollHeight - history.scrollTop - history.clientHeight < 120;
     if (message.channelId !== channelId || removedMessages.has(message.id)) return;
@@ -125,6 +130,7 @@ if (history && typeof io === "function") {
     controls();
   }
   controls();
+  // Khi kết nối hoặc kết nối lại, vào kênh và đồng bộ dữ liệu từ máy chủ.
   socket.on("connect", () => {
     connectionVersion++;
     const version = connectionVersion;
@@ -143,6 +149,7 @@ if (history && typeof io === "function") {
         setStatus("Chưa kết nối được kênh");
         return;
       }
+      // Thay snapshot khi kết nối lại để nhận tin mới và tin đã xóa trong lúc mất mạng.
       history.querySelectorAll("[data-message-id]").forEach((row) => row.remove());
       removedMessages.clear();
       joined = true;
@@ -182,6 +189,7 @@ if (history && typeof io === "function") {
             result?.message || "Không tải được tin nhắn cũ. Bấm tải lại để thử.";
           return;
         }
+        // Giữ tin đang đọc ở cùng vị trí sau khi chèn các tin cũ phía trên.
         const anchor = [...history.querySelectorAll("[data-message-id]")].find(
           (row) => row.getBoundingClientRect().bottom > history.getBoundingClientRect().top,
         );
@@ -206,6 +214,7 @@ if (history && typeof io === "function") {
       history.append(empty);
     }
   }
+  // Tạm giữ sự kiện realtime trong lúc tải lịch sử ban đầu để tránh cập nhật sai thứ tự.
   function receive(event, message) {
     if (message.channelId !== channelId) return;
     if (syncing) {
@@ -221,6 +230,7 @@ if (history && typeof io === "function") {
   for (const event of ["message:new", "message:deleted"]) {
     socket.on(event, (message) => receive(event, message));
   }
+  // Bắt nút Xóa bằng sự kiện trên vùng lịch sử, kể cả nút của tin mới thêm vào.
   history.addEventListener("click", (event) => {
     const control = event.target.closest('[data-message-action="delete"]');
     if (!control || control.disabled || !joined || !writable || deleting) return;
@@ -261,6 +271,7 @@ if (history && typeof io === "function") {
         : "Không thể kết nối · Đang thử lại…",
     );
   });
+  // Máy chủ đổi trạng thái kênh thì cập nhật ngay khả năng thao tác trên giao diện.
   socket.on("channel:state", (state) => {
     if (state.channelId !== channelId) return;
     writable = state.writable;
@@ -276,6 +287,7 @@ if (history && typeof io === "function") {
     setError(result.message);
     setStatus("Không còn quyền truy cập · Hãy tải lại trang");
   });
+  // Gửi qua Socket.IO và đợi xác nhận; giữ requestId nếu cần thử lại cùng nội dung.
   form?.addEventListener("submit", (event) => {
     event.preventDefault();
     if (!joined || !writable || sending) {

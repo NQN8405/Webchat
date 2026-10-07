@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+// Lớp hành chính thuộc một ngành và có thể được phân công giảng viên chủ nhiệm.
 const classSchema = new mongoose.Schema(
   {
     code: { type: String, required: true, unique: true, trim: true, uppercase: true },
@@ -12,5 +13,6 @@ const classSchema = new mongoose.Schema(
     collection: "classes",
   },
 );
+// Không cho hai lớp trùng tên trong cùng một ngành.
 classSchema.index({ majorId: 1, name: 1 }, { unique: true });
 module.exports = mongoose.model("StudentClass", classSchema);

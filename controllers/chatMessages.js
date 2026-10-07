@@ -6,6 +6,7 @@ const { isClassActive } = require("../services/classService");
 function chatError(code, message, status = 400) {
   return Object.assign(new Error(message), { code, status });
 }
+// Thành viên được xem lịch sử; gửi/xóa còn yêu cầu kênh, lớp, ngành và khoa hoạt động.
 async function channelAccess(channelId, userId, writing = false) {
   if (typeof channelId !== "string" || !mongoose.isValidObjectId(channelId))
     throw chatError("INVALID_CHANNEL", "Mã kênh không hợp lệ.");
@@ -21,6 +22,7 @@ async function channelAccess(channelId, userId, writing = false) {
     throw chatError("CHANNEL_CLOSED", "Kênh đã đóng. Bạn vẫn có thể xem lịch sử tin nhắn.");
   return { channel, writable };
 }
+// Chỉ gửi các trường cần hiển thị cho Client, chuyển id/ngày giờ thành chuỗi.
 function messageDTO(message) {
   return {
     id: String(message._id),
@@ -34,6 +36,7 @@ function messageDTO(message) {
     createdAt: message.createdAt.toISOString(),
   };
 }
+// Lấy thêm một tin để biết còn lịch sử hay không; cursor vẫn dùng được nếu tin mốc bị xóa.
 async function messagePage(channelId, before) {
   const query = { channelId };
   if (before !== undefined && before !== null) {
@@ -65,12 +68,14 @@ async function latestMessages(channelId, before) {
   const page = await messagePage(channelId, before);
   return { ...page, messages: page.messages.map(messageDTO) };
 }
+// Kiểm tra quyền và nội dung trước khi lưu; messageId dùng để nhận biết yêu cầu gửi lại.
 async function saveMessage(channelId, userId, content, messageId) {
   await channelAccess(channelId, userId, true);
   if (typeof content !== "string" || !content.trim() || content.trim().length > 4000)
     throw chatError("INVALID_CONTENT", "Nhập tin nhắn từ 1 đến 4.000 ký tự.");
   const fields = { channelId, senderId: userId, content: content.trim() };
   let saved;
+  // Yêu cầu trùng id dùng lại tin đã lưu; nội dung khác với cùng id sẽ bị từ chối.
   if (messageId) {
     saved = await Message.findById(messageId);
     if (!saved) {
@@ -92,6 +97,7 @@ async function saveMessage(channelId, userId, content, messageId) {
   return messageDTO(saved);
 }
 
+// Chỉ người gửi được xóa và phải còn quyền ghi trong kênh.
 async function deleteMessage(channelId, userId, messageId) {
   await channelAccess(channelId, userId, true);
   if (typeof messageId !== "string" || !mongoose.isValidObjectId(messageId))

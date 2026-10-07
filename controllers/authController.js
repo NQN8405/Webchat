@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const User = require("../models/User");
 const { text } = require("../services/validation");
 
+// Đã đăng nhập thì chuyển đến trang theo vai trò; ngược lại hiển thị biểu mẫu.
 exports.getLogin = (req, res) => {
   if (req.session?.user) {
     return res.redirect(req.session.user.role === "admin" ? "/admin/users" : "/");
@@ -9,6 +10,7 @@ exports.getLogin = (req, res) => {
   res.render("auth/Login", { error: null });
 };
 
+// Kiểm tra tài khoản, trạng thái và mật khẩu đã băm trước khi tạo phiên đăng nhập.
 exports.postLogin = async (req, res) => {
   try {
     const user = await User.findOne({ username: text(req.body.username) });
@@ -29,6 +31,7 @@ exports.postLogin = async (req, res) => {
             : "Tên đăng nhập hoặc mật khẩu không đúng.",
       });
     }
+    // Tạo lại session ID sau đăng nhập để tránh dùng lại phiên chưa xác thực.
     await new Promise((resolve, reject) =>
       req.session.regenerate((error) => (error ? reject(error) : resolve())),
     );
@@ -51,4 +54,5 @@ exports.postLogin = async (req, res) => {
   }
 };
 
+// Hủy phiên đăng nhập và đưa người dùng về trang đăng nhập.
 exports.logout = (req, res) => req.session.destroy(() => res.redirect("/login"));

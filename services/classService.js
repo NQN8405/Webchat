@@ -6,9 +6,11 @@ const Channel = require("../models/Channel");
 const ChannelMember = require("../models/ChannelMember");
 const { EventEmitter } = require("node:events");
 const { objectId, requireValue } = require("./validation");
+// Thông báo cho Socket.IO kiểm tra lại quyền khi dữ liệu lớp hoặc tài khoản thay đổi.
 const classEvents = new EventEmitter();
 let syncQueue = Promise.resolve();
 
+// Lấy lớp cùng ngành/khoa để kiểm tra quan hệ và trạng thái hoạt động.
 async function getClass(classId) {
   objectId(classId, "Lớp");
   const item = await StudentClass.findById(classId).populate({
@@ -18,6 +20,7 @@ async function getClass(classId) {
   requireValue(item, "Lớp không tồn tại.");
   return item;
 }
+// Lớp chỉ cho phép hoạt động khi cả lớp, ngành và khoa đều active.
 function isClassActive(item) {
   return (
     item?.status === "active" &&
@@ -39,6 +42,7 @@ async function getActiveMajor(majorId) {
   );
   return item;
 }
+// Sinh viên có lớp lấy khoa theo lớp; các tài khoản còn lại dùng khoa được chọn.
 async function resolveUserMembership(body, existing) {
   if (body.role === "student" && body.classId) {
     const item = await getClass(body.classId);
@@ -60,6 +64,7 @@ async function resolveUserMembership(body, existing) {
   return { classId: undefined, departmentId: undefined };
 }
 
+// Tạo một kênh mỗi lớp và tính lại thành viên từ dữ liệu lớp hiện tại.
 async function synchronizeClasses() {
   await Promise.all([StudentClass.init(), Channel.init(), ChannelMember.init()]);
   const classes = await StudentClass.find().populate({
@@ -68,6 +73,7 @@ async function synchronizeClasses() {
   });
   for (const item of classes) {
     const active = isClassActive(item);
+    // Chỉ tạo kênh nếu chưa có; giữ tên và trạng thái của kênh đã được quản trị viên chỉnh.
     const channel = await Channel.findOneAndUpdate(
       { classId: item._id, type: "class" },
       {
@@ -105,6 +111,7 @@ async function synchronizeClasses() {
           status: "active",
         }).select("_id")
       : null;
+    // Thành viên gồm sinh viên đang hoạt động trong lớp và giảng viên chủ nhiệm hợp lệ.
     const userIds = [...students.map((student) => student._id), ...(teacher ? [teacher._id] : [])];
     for (const userId of userIds) {
       await ChannelMember.updateOne(
@@ -113,11 +120,13 @@ async function synchronizeClasses() {
         { upsert: true },
       );
     }
+    // Gỡ người đã chuyển lớp, đổi phân công hoặc bị khóa khỏi danh sách thành viên.
     await ChannelMember.deleteMany({ channelId: channel._id, userId: { $nin: userIds } });
   }
   classEvents.emit("changed");
 }
 function syncClasses() {
+  // Tuần tự để hai thao tác admin không ghi đè danh sách thành viên của nhau.
   syncQueue = syncQueue.catch(() => {}).then(synchronizeClasses);
   return syncQueue;
 }

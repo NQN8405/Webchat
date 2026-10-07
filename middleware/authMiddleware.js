@@ -2,6 +2,7 @@ const crypto = require("node:crypto");
 const mongoose = require("mongoose");
 const User = require("../models/User");
 
+// Đọc lại tài khoản từ DB để khóa tài khoản hoặc đổi quyền có hiệu lực với phiên đang mở.
 async function requireAuth(req, res, next) {
   const id = req.session?.user?.id;
   if (!id || !mongoose.isValidObjectId(id)) return res.redirect("/login");
@@ -17,6 +18,7 @@ async function requireAuth(req, res, next) {
   res.locals.user = req.session.user;
   next();
 }
+// Tạo mã bảo vệ biểu mẫu trong session; yêu cầu POST phải gửi đúng mã qua _csrf.
 function csrf(key) {
   return (req, res, next) => {
     req.session[key] ||= crypto.randomBytes(32).toString("hex");
@@ -38,6 +40,7 @@ function csrf(key) {
     next();
   };
 }
+// Trang quản trị yêu cầu đăng nhập, vai trò admin và mã biểu mẫu hợp lệ.
 const requireAdmin = [
   requireAuth,
   (req, res, next) => {

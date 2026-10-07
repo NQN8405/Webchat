@@ -1,11 +1,13 @@
 const mongoose = require("mongoose");
 const { birthDate } = require("../services/validation");
 
+// Tài khoản dùng chung cho ba vai trò; khoa/lớp được kiểm tra theo nghiệp vụ ở controller.
 const userSchema = new mongoose.Schema(
   {
     username: { type: String, required: true, unique: true, trim: true },
     hashedPassword: { type: String, required: true },
     displayName: { type: String, required: true, trim: true },
+    // Admin khởi tạo có thể không có ngày sinh; biểu mẫu cấp tài khoản yêu cầu nhập.
     birthDate: {
       type: Date,
       validate: {

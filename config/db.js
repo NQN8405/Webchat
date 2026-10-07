@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 
+// Dùng cấu hình MONGODB_URI; mặc định kết nối database webchat trên máy.
 const connectDB = async () => {
   try {
     const conn = await mongoose.connect(

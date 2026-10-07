@@ -1,5 +1,6 @@
 const express = require("express");
 const path = require("node:path");
+// Node.js nạp cấu hình .env nếu có; biến môi trường đã đặt được giữ nguyên.
 const envFile = path.join(__dirname, ".env");
 if (require("node:fs").existsSync(envFile)) process.loadEnvFile(envFile);
 const { createServer } = require("node:http");
@@ -10,6 +11,7 @@ const User = require("./models/User");
 const { attachChat } = require("./controllers/chatSocket");
 const { syncClasses } = require("./services/classService");
 
+// Tạo ứng dụng Express và gắn Socket.IO vào cùng máy chủ HTTP.
 function createApp() {
   const app = express();
   app.set("view engine", "ejs");
@@ -17,6 +19,7 @@ function createApp() {
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
   app.use(require("./routes/assetsRoutes"));
+  // Session lưu thông tin đăng nhập để các yêu cầu HTTP và Socket.IO dùng chung.
   const sessionMiddleware = session({
     secret: process.env.SESSION_SECRET || "webchat-development-secret",
     resave: false,
@@ -29,6 +32,7 @@ function createApp() {
       .toString("hex");
     next();
   });
+  // Truyền dữ liệu chung cho EJS; thông báo chỉ hiển thị một lần sau thao tác.
   app.use((req, res, next) => {
     res.locals.user = req.session.user || null;
     res.locals.logoutToken = req.session.logoutCsrfToken;
@@ -45,6 +49,7 @@ function createApp() {
   app.use(require("./routes/authRoutes"));
   app.use("/admin", require("./routes/adminRoutes"));
   app.use(require("./routes/userRoutes"));
+  // Các route không khớp trả về trang 404; middleware tiếp theo xử lý lỗi phát sinh.
   app.use((req, res) =>
     res.status(404).render("error", {
       title: "Không tìm thấy trang",
@@ -61,6 +66,7 @@ function createApp() {
   });
   return { app, server, io };
 }
+// Kết nối DB, tạo admin nếu chưa có và đồng bộ kênh trước khi mở cổng.
 async function start() {
   await connectDB();
   const username = process.env.ADMIN_USERNAME || "admin";
@@ -80,6 +86,7 @@ async function start() {
   const port = process.env.PORT || 3000;
   server.listen(port, () => console.log("WebChat: http://localhost:" + port));
 }
+// Import createApp trong kiểm thử không khởi động ứng dụng hoặc sửa DB đang sử dụng.
 if (require.main === module)
   start().catch((error) => {
     console.error(error);

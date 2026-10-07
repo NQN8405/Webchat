@@ -20,6 +20,7 @@ const {
   classEvents,
 } = require("../services/classService");
 
+// Một bộ dữ liệu lựa chọn dùng chung cho các biểu mẫu quản trị.
 async function formOptions() {
   const [departments, majors, classes, lecturers] = await Promise.all([
     Department.find().sort({ code: 1 }),
@@ -32,6 +33,7 @@ async function formOptions() {
   ]);
   return { departments, majors, classes, lecturers };
 }
+// Tạo bộ lọc tìm kiếm; escape ký tự đặc biệt để từ khóa được hiểu như văn bản.
 function searchFilter(query, fields) {
   const value = text(query.search).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const filter = ["active", "inactive", "locked", "closed"].includes(
@@ -48,6 +50,7 @@ function searchFilter(query, fields) {
       }
     : filter;
 }
+// Gộp dữ liệu danh sách, lựa chọn biểu mẫu và bộ lọc để render trang quản trị.
 async function page(req, res, view, rows, extra = {}) {
   const options = await formOptions();
   if (["users", "departments", "majors", "classes", "channels"].includes(view))
@@ -69,11 +72,13 @@ async function findRecord(Model, id) {
   objectId(id, "Mã bản ghi");
   return requireValue(await Model.findById(id), "Không tìm thấy bản ghi.");
 }
+// Đồng bộ kênh/thành viên sau thay đổi dữ liệu rồi chuyển trang kèm thông báo.
 async function finish(req, res, path, message) {
   await syncClasses();
   req.session.notice = message;
   res.redirect(path);
 }
+// Chuẩn hóa và kiểm tra mã, tên dùng chung cho khoa, ngành và lớp.
 function catalogFields(body) {
   const code = requireValue(text(body.code).toUpperCase(), "Vui lòng nhập mã.");
   const name = requireValue(text(body.name), "Vui lòng nhập tên.");
@@ -82,6 +87,7 @@ function catalogFields(body) {
   return { code, name };
 }
 
+// Quản lý khoa: xem danh sách, thêm/sửa thông tin và đổi trạng thái.
 exports.getDepartments = async (req, res) =>
   page(
     req,
@@ -113,6 +119,7 @@ exports.toggleDepartment = async (req, res) => {
     "Đã đổi trạng thái khoa; kênh liên quan được đồng bộ.",
   );
 };
+// Quản lý ngành: liên kết khoa; chỉ kích hoạt ngành khi khoa đang hoạt động.
 exports.getMajors = async (req, res) => {
   const filter = searchFilter(req.query, ["code", "name"]);
   if (text(req.query.departmentId))
@@ -150,6 +157,7 @@ exports.toggleMajor = async (req, res) => {
   await item.save();
   await finish(req, res, "/admin/majors", "Đã đổi trạng thái ngành.");
 };
+// Quản lý lớp: liên kết ngành, phân công giảng viên chủ nhiệm và đổi trạng thái.
 exports.getClasses = async (req, res) => {
   const filter = searchFilter(req.query, ["code", "name"]);
   if (text(req.query.majorId))
@@ -164,6 +172,7 @@ exports.getClasses = async (req, res) => {
       .sort({ code: 1 }),
   );
 };
+// Có id thì cập nhật, không có id thì tạo mới; kiểm tra ngành và giảng viên trước khi lưu.
 exports.saveClass = async (req, res) => {
   const item = req.params.id
     ? await findRecord(StudentClass, req.params.id)
@@ -206,6 +215,7 @@ exports.toggleClass = async (req, res) => {
   );
 };
 
+// Quản lý tài khoản: tìm kiếm, lọc vai trò/khoa/lớp/trạng thái và hiển thị danh sách.
 exports.getUsers = async (req, res) => {
   const filter = searchFilter(req.query, ["username", "displayName"]);
   if (["student", "lecturer", "admin"].includes(req.query.role))
@@ -222,6 +232,7 @@ exports.getUsers = async (req, res) => {
       .sort({ username: 1 }),
   );
 };
+// Tạo hoặc sửa tài khoản; xác định khoa/lớp theo vai trò và bảo vệ quyền admin hiện tại.
 exports.saveUser = async (req, res) => {
   const item = req.params.id
     ? await findRecord(User, req.params.id)
@@ -247,6 +258,7 @@ exports.saveUser = async (req, res) => {
     item,
   );
   const dateOfBirth = birthDate(req.body.birthDate);
+  // Tài khoản mới dùng ddMMyyyy; sửa ngày sinh không làm đổi mật khẩu hiện tại.
   const initialPassword = req.body.birthDate.split("-").reverse().join("");
   const password = item.isNew
     ? initialPassword
@@ -289,6 +301,7 @@ exports.toggleUser = async (req, res) => {
   await item.save();
   await finish(req, res, "/admin/users", "Đã đổi trạng thái tài khoản.");
 };
+// Tách sinh viên trong lớp và sinh viên chưa xếp lớp để hiển thị biểu mẫu phân lớp.
 exports.getClassStudents = async (req, res) => {
   const classId = text(req.query.classId);
   let selectedClass = null,
@@ -315,6 +328,7 @@ exports.getClassStudents = async (req, res) => {
     },
   );
 };
+// Kiểm tra danh sách chọn, cập nhật lớp/khoa rồi đồng bộ lại quyền chat.
 exports.assignStudents = async (req, res) => {
   const item = await getActiveClass(text(req.body.classId));
   const rawIds = Array.isArray(req.body.studentIds)
@@ -345,6 +359,7 @@ exports.assignStudents = async (req, res) => {
     "Đã phân/chuyển sinh viên và cập nhật quyền chat.",
   );
 };
+// Bỏ liên kết lớp của sinh viên; đồng bộ thành viên kênh, không xóa lịch sử tin nhắn.
 exports.removeStudent = async (req, res) => {
   const classId = objectId(text(req.body.classId), "Lớp");
   const student = await findRecord(User, req.params.id);
@@ -361,6 +376,7 @@ exports.removeStudent = async (req, res) => {
     "Đã bỏ sinh viên khỏi lớp; giữ nguyên lịch sử tin nhắn.",
   );
 };
+// Quản lý kênh chung: lọc danh sách, đếm thành viên, đổi tên và đóng/mở kênh.
 exports.getChannels = async (req, res) => {
   const filter = { type: "class", ...searchFilter(req.query, ["name"]) };
   if (text(req.query.classId))
@@ -394,6 +410,7 @@ exports.toggleChannel = async (req, res) => {
   item.status = item.status === "active" ? "closed" : "active";
   item.closedAt = item.status === "closed" ? new Date() : undefined;
   await item.save();
+  // Báo cho Socket.IO ngay sau khi lưu, kể cả khi không thay danh sách thành viên.
   classEvents.emit("changed");
   req.session.notice = "Đã đổi trạng thái kênh; lịch sử được giữ nguyên.";
   res.redirect("/admin/channels");

@@ -10,6 +10,7 @@ const {
   deleteMessage,
 } = require("./chatMessages");
 const { classEvents } = require("../services/classService");
+// So sánh mã bảo vệ kết nối với mã trong session bằng timingSafeEqual.
 function validToken(supplied, expected) {
   return (
     typeof supplied === "string" &&
@@ -18,9 +19,12 @@ function validToken(supplied, expected) {
     crypto.timingSafeEqual(Buffer.from(supplied), Buffer.from(expected))
   );
 }
+// Khởi tạo máy chủ realtime và đăng ký các sự kiện của chức năng chat.
 function attachChat(server, sessionMiddleware, app) {
   const io = new Server(server, { maxHttpBufferSize: 20000 });
+  // Dùng chung cookie/session Express; không tin userId hay senderId từ trình duyệt.
   io.engine.use(sessionMiddleware);
+  // Nạp lại session và kiểm tra tài khoản ở mỗi lần xử lý để không tin phiên cũ.
   async function authenticate(socket) {
     await new Promise((resolve, reject) => {
       if (!socket.request.session)
@@ -69,6 +73,7 @@ function attachChat(server, sessionMiddleware, app) {
     }
     return data;
   }
+  // Kiểm tra lại từng người nhận để session cũ/thành viên vừa bị gỡ không nhận tin mới.
   async function publish(message, event = "message:new") {
     const recipients = await io.in("channel:" + message.channelId).fetchSockets();
     await Promise.all(
@@ -86,6 +91,7 @@ function attachChat(server, sessionMiddleware, app) {
   app.locals.publishChatMessage = publish;
   io.on("connection", (socket) => {
     let queue = Promise.resolve();
+    // Xử lý tuần tự sự kiện của một kết nối; ack trả kết quả cho đúng yêu cầu Client.
     const handle = (event, fn) =>
       socket.on(event, (payload, ack) => {
         if (typeof ack !== "function") return;
@@ -99,15 +105,18 @@ function attachChat(server, sessionMiddleware, app) {
             }
           });
       });
+    // Vào nhóm kết nối của kênh để nhận cập nhật và đồng bộ lịch sử ban đầu.
     handle("channel:join", async (payload) => {
       await authorized(socket, payload.channelId);
       for (const room of socket.rooms) if (room.startsWith("channel:")) socket.leave(room);
       socket.data.channelId = payload.channelId;
       await socket.join("channel:" + payload.channelId);
+      // Vào room trước khi đọc lịch sử để không hụt tin ở khoảng chuyển tiếp; client loại trùng theo ID.
       const messages = await latestMessages(payload.channelId);
       const { writable } = await authorized(socket, payload.channelId);
       return { ...messages, writable };
     });
+    // Dùng mốc before để tải đợt lịch sử cũ hơn; kiểm tra lại quyền trước khi trả dữ liệu.
     handle("message:history", async (payload) => {
       await authorized(socket, payload.channelId);
       if (!payload.before) throw chatError("INVALID_CURSOR", "Thiếu mốc tải tin nhắn.");
@@ -119,6 +128,7 @@ function attachChat(server, sessionMiddleware, app) {
       const userId = await authenticate(socket);
       if (typeof payload.requestId !== "string" || !/^[a-zA-Z0-9-]{16,80}$/.test(payload.requestId))
         throw chatError("INVALID_REQUEST", "Mã yêu cầu gửi không hợp lệ.");
+      // Cùng session/người gửi/kênh/requestId tạo cùng id, hạn chế lưu trùng khi gửi lại.
       const messageId = crypto
         .createHash("sha256")
         .update(
@@ -127,10 +137,12 @@ function attachChat(server, sessionMiddleware, app) {
         .digest("hex")
         .slice(0, 24);
       const message = await saveMessage(payload.channelId, userId, payload.content, messageId);
+      // Đã lưu là thành công; lỗi phát tin sẽ được bù bằng lịch sử khi kết nối lại.
       await publish(message).catch((error) => console.error("Chat publish:", error.message));
       return { message };
     });
 
+    // Xóa tin thuộc người gửi rồi phát sự kiện để các Client bỏ tin khỏi giao diện.
     handle("message:delete", async (payload) => {
       const userId = await authenticate(socket);
       const message = await deleteMessage(payload.channelId, userId, payload.messageId);
@@ -140,7 +152,9 @@ function attachChat(server, sessionMiddleware, app) {
       return { message };
     });
   });
+  // Admin đổi lớp/giảng viên, khóa tài khoản hoặc đóng kênh: cập nhật ngay tab đang mở.
   let accessRevision = 0;
+  // Bỏ qua kết quả kiểm tra cũ nếu đã có đợt thay đổi quyền mới hơn.
   async function refreshAccess(revision) {
     await Promise.all(
       [...io.sockets.sockets.values()].map(async (socket) => {

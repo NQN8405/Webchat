@@ -3,6 +3,7 @@ const { requireAuth, csrf } = require("../middleware/authMiddleware");
 const controller = require("../controllers/userController");
 const router = express.Router();
 
+// Admin dùng giao diện quản trị; các trang user dành cho sinh viên và giảng viên.
 function requireUserPage(req, res, next) {
   if (req.session.user.role !== "admin") return next();
   if (req.method === "GET") return res.redirect("/admin/users");
@@ -12,9 +13,11 @@ function requireUserPage(req, res, next) {
   });
 }
 
+// Các trang User kiểm tra đăng nhập và vai trò trước khi gọi controller.
 router.get("/", requireAuth, requireUserPage, csrf("chatCsrfToken"), controller.getHome);
 router.get("/chat", requireAuth, requireUserPage, csrf("chatCsrfToken"), controller.getChat);
 router.get("/profile", requireAuth, requireUserPage, csrf("chatCsrfToken"), controller.getProfile);
+// Các biểu mẫu thay đổi dữ liệu phải kiểm tra thêm CSRF ở phía máy chủ.
 router.post(
   "/channels/:id/messages",
   requireAuth,
